@@ -3,6 +3,7 @@
 import math
 
 import rclpy
+from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
 from rosgraph_msgs.msg import Clock as ClockMessage
 from sensor_msgs.msg import CameraInfo
@@ -81,7 +82,7 @@ def main(args=None) -> None:
     node = CameraInfoPublisher()
     try:
         rclpy.spin(node)
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, ExternalShutdownException):
         pass
     finally:
         node.destroy_node()

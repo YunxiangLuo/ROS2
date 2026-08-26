@@ -23,7 +23,7 @@ WORLD_NAME = "default"
 
 def generate_launch_description() -> LaunchDescription:
     share = Path(get_package_share_directory("robot_sim_demo"))
-    world = share / "worlds" / "museum.sdf"
+    default_world = share / "worlds" / "museum.sdf"
     robot_sdf = share / "models" / ROBOT_NAME / "model.sdf"
     robot_urdf = share / "wheeltec_robot_urdf" / "urdf" / "mini_akm_robot.urdf"
     bridge_config = share / "config" / "gazebo2_bridge.yaml"
@@ -44,12 +44,14 @@ def generate_launch_description() -> LaunchDescription:
     drive_angular_speed = LaunchConfiguration("drive_angular_speed")
     drive_loop = LaunchConfiguration("drive_loop")
     drive_duration = LaunchConfiguration("drive_duration")
+    gz_partition = LaunchConfiguration("gz_partition")
     world_name = LaunchConfiguration("world_name")
     spawn_x = LaunchConfiguration("spawn_x")
     spawn_y = LaunchConfiguration("spawn_y")
     spawn_z = LaunchConfiguration("spawn_z")
     spawn_yaw = LaunchConfiguration("spawn_yaw")
     use_sim_time = LaunchConfiguration("use_sim_time")
+    world_path = LaunchConfiguration("world")
 
     robot_description = robot_urdf.read_text(encoding="utf-8")
 
@@ -61,7 +63,7 @@ def generate_launch_description() -> LaunchDescription:
                 "-r --gui-config ",
                 str(gui_config),
                 " ",
-                str(world),
+                 world_path,
             ],
             "on_exit_shutdown": "true",
         }.items(),
@@ -70,7 +72,7 @@ def generate_launch_description() -> LaunchDescription:
         PythonLaunchDescriptionSource(str(gz_launch)),
         condition=UnlessCondition(gui),
         launch_arguments={
-            "gz_args": ["-r -s --headless-rendering ", str(world)],
+            "gz_args": ["-r -s --headless-rendering ", world_path],
             "on_exit_shutdown": "true",
         }.items(),
     )
@@ -108,7 +110,10 @@ def generate_launch_description() -> LaunchDescription:
             DeclareLaunchArgument("drive_angular_speed", default_value="0.55"),
             DeclareLaunchArgument("drive_loop", default_value="true"),
             DeclareLaunchArgument("drive_duration", default_value="0.0"),
+            DeclareLaunchArgument("gz_partition", default_value="robot_sim_demo"),
+            DeclareLaunchArgument("world", default_value=str(default_world)),
             DeclareLaunchArgument("world_name", default_value=WORLD_NAME),
+            SetEnvironmentVariable(name="GZ_PARTITION", value=gz_partition),
             DeclareLaunchArgument("spawn_x", default_value="0.0"),
             DeclareLaunchArgument("spawn_y", default_value="0.0"),
             DeclareLaunchArgument("spawn_z", default_value="0.03"),

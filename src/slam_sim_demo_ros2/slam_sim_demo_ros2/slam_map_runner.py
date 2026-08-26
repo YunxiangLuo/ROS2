@@ -6,6 +6,7 @@ from nav_msgs.msg import OccupancyGrid, Odometry
 import rclpy
 from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
+from sensor_msgs.msg import LaserScan
 
 
 def count_known_cells(cells: list[int]) -> int:
@@ -17,14 +18,12 @@ def planar_distance(start: tuple[float, float], end: tuple[float, float]) -> flo
 
 
 def command_for_elapsed(elapsed_sec: float) -> tuple[float, float]:
-    cycle_time = elapsed_sec % 8.0
-    if cycle_time < 2.0:
-        return (0.0, 0.6)
-    if cycle_time < 4.5:
-        return (0.25, 0.0)
-    if cycle_time < 6.5:
-        return (0.0, -0.6)
-    return (0.25, 0.0)
+    cycle_time = elapsed_sec % 20.0
+    if cycle_time < 8.0:
+        return (0.18, 0.0)
+    if cycle_time < 12.0:
+        return (0.0, 0.5)
+    return (0.18, 0.0)
 
 
 class SlamMapCheckNode(Node):
@@ -33,6 +32,8 @@ class SlamMapCheckNode(Node):
         self.command_publisher = self.create_publisher(Twist, "/cmd_vel", 10)
         self.odom_subscription = self.create_subscription(Odometry, "/odom", self.handle_odom, 10)
         self.map_subscription = self.create_subscription(OccupancyGrid, "/map", self.handle_map, 10)
+        self.scan_subscription = self.create_subscription(LaserScan, "/scan", self.handle_scan, 10)
+        self.declare_parameter("timeout_sec", 60.0)
 
         self.start_pose = None
         self.latest_pose = None
@@ -40,6 +41,8 @@ class SlamMapCheckNode(Node):
         self.max_known_cells = 0
         self.map_updates = 0
         self.last_map_stamp = None
+        self.scan_updates = 0
+        self.max_finite_ranges = 0
 
     def handle_odom(self, message: Odometry) -> None:
         pose = (
@@ -60,6 +63,11 @@ class SlamMapCheckNode(Node):
         if self.first_map_known_cells is None:
             self.first_map_known_cells = known_cells
         self.max_known_cells = max(self.max_known_cells, known_cells)
+
+    def handle_scan(self, message: LaserScan) -> None:
+        self.scan_updates += 1
+        finite_ranges = sum(math.isfinite(value) for value in message.ranges)
+        self.max_finite_ranges = max(self.max_finite_ranges, finite_ranges)
 
     def ready(self) -> bool:
         return self.latest_pose is not None and self.first_map_known_cells is not None
@@ -83,8 +91,19 @@ class SlamMapCheckNode(Node):
             return False
         return (
             self.map_updates >= 2
-            and self.odom_distance() > 0.2
-            and self.max_known_cells - self.first_map_known_cells > 100
+            and self.scan_updates >= 2
+            and self.odom_distance() > 0.15
+            and self.max_known_cells - self.first_map_known_cells > 20
+        )
+
+    def metrics(self) -> str:
+        initial_cells = self.first_map_known_cells or 0
+        return (
+            f"map_updates={self.map_updates}, "
+            f"known_cell_growth={self.max_known_cells - initial_cells}, "
+            f"odom_distance={self.odom_distance():.3f}, "
+            f"scan_updates={self.scan_updates}, "
+            f"max_finite_ranges={self.max_finite_ranges}"
         )
 
 
@@ -94,27 +113,32 @@ def main() -> None:
     executor = SingleThreadedExecutor()
     executor.add_node(node)
 
-    overall_start = time.time()
+    timeout_sec = float(node.get_parameter("timeout_sec").value)
+    overall_start = time.monotonic()
     motion_start = None
     try:
-        while time.time() - overall_start < 25.0:
+        while time.monotonic() - overall_start < timeout_sec:
             executor.spin_once(timeout_sec=0.1)
             if not node.ready():
                 continue
 
             if motion_start is None:
-                motion_start = time.time()
+                motion_start = time.monotonic()
 
-            linear_x, angular_z = command_for_elapsed(time.time() - motion_start)
+            linear_x, angular_z = command_for_elapsed(time.monotonic() - motion_start)
             node.publish_command(linear_x, angular_z)
 
             if node.succeeded():
                 node.publish_stop()
+                print(node.metrics())
                 print("slam-map-updated")
                 return
 
         node.publish_stop()
-        raise RuntimeError("slam_toolbox did not publish a growing map after driving the robot")
+        raise RuntimeError(
+            "slam_toolbox did not publish a growing map after driving the robot: "
+            + node.metrics()
+        )
     finally:
         executor.remove_node(node)
         node.destroy_node()

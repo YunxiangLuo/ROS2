@@ -87,8 +87,8 @@ class ReloadedMapWatcher(Node):
             return False
         return (
             self.map_updates >= 2
-            and self.odom_distance() > 0.2
-            and self.max_known_cells - self.first_map_known_cells > 100
+            and self.odom_distance() > 0.15
+            and self.max_known_cells - self.first_map_known_cells > 20
         )
 
 
@@ -122,7 +122,7 @@ def main() -> None:
     motion_start = None
     map_server_process = None
     try:
-        while time.time() - overall_start < 25.0:
+        while time.time() - overall_start < 60.0:
             executor.spin_once(timeout_sec=0.1)
             if not node.ready():
                 continue

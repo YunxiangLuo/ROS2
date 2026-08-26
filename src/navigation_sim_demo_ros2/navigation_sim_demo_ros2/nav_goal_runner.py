@@ -3,13 +3,10 @@ import time
 
 from geometry_msgs.msg import PoseStamped
 from nav2_msgs.action import NavigateToPose
-from nav2_simple_commander.robot_navigator import BasicNavigator
 from nav_msgs.msg import Odometry
 import rclpy
 from rclpy.action import ActionClient
-from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
-from rclpy.parameter import Parameter
 
 
 def yaw_to_quaternion(yaw: float) -> tuple[float, float, float, float]:
@@ -32,11 +29,19 @@ def build_pose(frame_id: str, x: float, y: float, yaw: float) -> PoseStamped:
     return pose
 
 
-class OdomWatcher(Node):
+class NavigationGoalRunner(Node):
     def __init__(self) -> None:
-        super().__init__("nav_goal_odom_watcher")
+        super().__init__("nav_goal_runner")
+        if not self.has_parameter("use_sim_time"):
+            self.declare_parameter("use_sim_time", True)
+        self.declare_parameter("goal_x", 1.0)
+        self.declare_parameter("goal_y", 0.0)
+        self.declare_parameter("goal_yaw", 0.0)
+        self.declare_parameter("server_timeout_sec", 30.0)
+        self.declare_parameter("motion_timeout_sec", 20.0)
         self.latest = None
         self.subscription = self.create_subscription(Odometry, "/odom", self.callback, 10)
+        self.navigate_action = ActionClient(self, NavigateToPose, "navigate_to_pose")
 
     def callback(self, message: Odometry) -> None:
         self.latest = message
@@ -49,55 +54,52 @@ def stamp_pose(node: Node, pose: PoseStamped) -> PoseStamped:
 
 def main() -> None:
     rclpy.init()
-    navigator = BasicNavigator()
-    odom_watcher = OdomWatcher()
-    use_sim_time = bool(odom_watcher.get_parameter("use_sim_time").value)
-    navigator.set_parameters([Parameter("use_sim_time", value=use_sim_time)])
-    navigate_action = ActionClient(navigator, NavigateToPose, "navigate_to_pose")
-    executor = SingleThreadedExecutor()
-    executor.add_node(navigator)
-    executor.add_node(odom_watcher)
+    node = NavigationGoalRunner()
 
     try:
-        start_pose = stamp_pose(navigator, build_pose("map", 5.0, 0.0, -2.0))
-        goal_pose = stamp_pose(odom_watcher, build_pose("map", 3.0, -1.0, -2.0))
-        navigator.setInitialPose(start_pose)
-        navigator.waitUntilNav2Active()
-        if not navigate_action.wait_for_server(timeout_sec=10.0):
+        goal_pose = stamp_pose(
+            node,
+            build_pose(
+                "map",
+                float(node.get_parameter("goal_x").value),
+                float(node.get_parameter("goal_y").value),
+                float(node.get_parameter("goal_yaw").value),
+            ),
+        )
+        server_timeout = float(node.get_parameter("server_timeout_sec").value)
+        if not node.navigate_action.wait_for_server(timeout_sec=server_timeout):
             raise RuntimeError("NavigateToPose action server did not become ready")
 
         goal = NavigateToPose.Goal()
         goal.pose = goal_pose
-        goal_future = navigate_action.send_goal_async(goal, feedback_callback=None)
-        rclpy.spin_until_future_complete(navigator, goal_future, timeout_sec=5.0)
+        goal_future = node.navigate_action.send_goal_async(goal, feedback_callback=None)
+        rclpy.spin_until_future_complete(node, goal_future, timeout_sec=10.0)
         goal_handle = goal_future.result()
         if goal_handle is None or not goal_handle.accepted:
             raise RuntimeError("NavigateToPose goal was rejected")
 
         start_time = time.time()
         start_odom_position = None
-        while time.time() - start_time < 8.0:
-            executor.spin_once(timeout_sec=0.1)
-            if odom_watcher.latest is None:
+        motion_timeout = float(node.get_parameter("motion_timeout_sec").value)
+        while time.time() - start_time < motion_timeout:
+            rclpy.spin_once(node, timeout_sec=0.1)
+            if node.latest is None:
                 continue
-            latest_x = float(odom_watcher.latest.pose.pose.position.x)
-            latest_y = float(odom_watcher.latest.pose.pose.position.y)
+            latest_x = float(node.latest.pose.pose.position.x)
+            latest_y = float(node.latest.pose.pose.position.y)
             if start_odom_position is None:
                 start_odom_position = (latest_x, latest_y)
                 continue
             if planar_distance(start_odom_position[0], start_odom_position[1], latest_x, latest_y) > 0.05:
                 cancel_future = goal_handle.cancel_goal_async()
-                rclpy.spin_until_future_complete(navigator, cancel_future, timeout_sec=3.0)
+                rclpy.spin_until_future_complete(node, cancel_future, timeout_sec=3.0)
                 print("navigation-motion-detected")
                 return
 
         cancel_future = goal_handle.cancel_goal_async()
-        rclpy.spin_until_future_complete(navigator, cancel_future, timeout_sec=3.0)
+        rclpy.spin_until_future_complete(node, cancel_future, timeout_sec=3.0)
         raise RuntimeError("Robot odometry did not change after sending NavigateToPose goal")
     finally:
-        executor.remove_node(navigator)
-        executor.remove_node(odom_watcher)
-        odom_watcher.destroy_node()
-        navigator.destroy_node()
+        node.destroy_node()
         if rclpy.ok():
             rclpy.shutdown()

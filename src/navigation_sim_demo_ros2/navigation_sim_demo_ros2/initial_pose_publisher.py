@@ -2,6 +2,7 @@ import math
 
 import rclpy
 from geometry_msgs.msg import PoseWithCovarianceStamped
+from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
 
 
@@ -15,9 +16,9 @@ class InitialPosePublisher(Node):
         super().__init__("initial_pose_publisher")
         self.declare_parameter("topic", "/initialpose")
         self.declare_parameter("frame_id", "map")
-        self.declare_parameter("x", 5.0)
+        self.declare_parameter("x", 0.0)
         self.declare_parameter("y", 0.0)
-        self.declare_parameter("yaw", -2.0)
+        self.declare_parameter("yaw", 0.0)
         self.declare_parameter("publish_count", 10)
         self.declare_parameter("publish_period_sec", 0.5)
 
@@ -39,7 +40,6 @@ class InitialPosePublisher(Node):
             return
 
         message = PoseWithCovarianceStamped()
-        message.header.stamp = self.get_clock().now().to_msg()
         message.header.frame_id = self.frame_id
         message.pose.pose.position.x = self.x
         message.pose.pose.position.y = self.y
@@ -58,7 +58,7 @@ def main() -> None:
     node = InitialPosePublisher()
     try:
         rclpy.spin(node)
-    except KeyboardInterrupt:
+    except (KeyboardInterrupt, ExternalShutdownException):
         pass
     finally:
         node.destroy_node()

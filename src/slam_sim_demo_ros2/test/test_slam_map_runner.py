@@ -11,7 +11,7 @@ class SlamMapRunnerUnitTest(unittest.TestCase):
         self.assertAlmostEqual(planar_distance((0.0, 0.0), (3.0, 4.0)), 5.0)
 
     def test_command_sequence_cycles(self):
-        self.assertEqual(command_for_elapsed(0.5), (0.0, 0.6))
-        self.assertEqual(command_for_elapsed(2.5), (0.25, 0.0))
-        self.assertEqual(command_for_elapsed(5.0), (0.0, -0.6))
-        self.assertEqual(command_for_elapsed(7.0), (0.25, 0.0))
+        self.assertEqual(command_for_elapsed(0.5), (0.18, 0.0))
+        self.assertEqual(command_for_elapsed(9.0), (0.0, 0.5))
+        self.assertEqual(command_for_elapsed(15.0), (0.18, 0.0))
+        self.assertEqual(command_for_elapsed(20.5), (0.18, 0.0))

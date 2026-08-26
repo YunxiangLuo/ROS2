@@ -13,13 +13,13 @@ from nav2_common.launch import RewrittenYaml
 
 def generate_launch_description() -> LaunchDescription:
     nav_pkg_share = get_package_share_directory("navigation_sim_demo_ros2")
-    robot_sim_share = get_package_share_directory("robot_sim_demo_ros2")
+    robot_sim_share = get_package_share_directory("robot_sim_demo")
 
     default_map = os.path.join(nav_pkg_share, "maps", "Software_Museum.yaml")
     default_params = os.path.join(nav_pkg_share, "params", "nav2_params.yaml")
     default_rviz = os.path.join(nav_pkg_share, "rviz", "navigation.rviz")
     default_world = os.path.join(robot_sim_share, "worlds", "museum.sdf")
-    robot_sim_launch = os.path.join(robot_sim_share, "launch", "sim_bringup.launch.py")
+    robot_sim_launch = os.path.join(robot_sim_share, "launch", "gazebo2.launch.py")
 
     map_yaml = LaunchConfiguration("map")
     params_file = LaunchConfiguration("params_file")
@@ -59,18 +59,18 @@ def generate_launch_description() -> LaunchDescription:
             DeclareLaunchArgument("params_file", default_value=default_params),
             DeclareLaunchArgument("rviz_config", default_value=default_rviz),
             DeclareLaunchArgument("world", default_value=default_world),
-            DeclareLaunchArgument("spawn_x", default_value="5.0"),
+            DeclareLaunchArgument("spawn_x", default_value="0.0"),
             DeclareLaunchArgument("spawn_y", default_value="0.0"),
-            DeclareLaunchArgument("spawn_z", default_value="0.25"),
-            DeclareLaunchArgument("spawn_yaw", default_value="-2.0"),
-            DeclareLaunchArgument("initial_pose_x", default_value="5.0"),
+            DeclareLaunchArgument("spawn_z", default_value="0.03"),
+            DeclareLaunchArgument("spawn_yaw", default_value="0.0"),
+            DeclareLaunchArgument("initial_pose_x", default_value="0.0"),
             DeclareLaunchArgument("initial_pose_y", default_value="0.0"),
-            DeclareLaunchArgument("initial_pose_yaw", default_value="-2.0"),
+            DeclareLaunchArgument("initial_pose_yaw", default_value="0.0"),
             DeclareLaunchArgument("use_rviz", default_value="true"),
             DeclareLaunchArgument("use_gazebo", default_value="false"),
             DeclareLaunchArgument("gz_headless", default_value="true"),
             DeclareLaunchArgument("use_respawn", default_value="false"),
-            DeclareLaunchArgument("use_sim_time", default_value="false"),
+            DeclareLaunchArgument("use_sim_time", default_value="true"),
             DeclareLaunchArgument("lifecycle_delay_sec", default_value="1.5"),
             DeclareLaunchArgument("initial_pose_delay_sec", default_value="4.0"),
             DeclareLaunchArgument("log_level", default_value="info"),
@@ -80,28 +80,22 @@ def generate_launch_description() -> LaunchDescription:
                     IncludeLaunchDescription(
                         PythonLaunchDescriptionSource(robot_sim_launch),
                         launch_arguments={
-                            "use_rviz": "false",
-                            "use_gazebo": use_gazebo,
-                            "gz_headless": gz_headless,
+                            "gui": PythonExpression(
+                                ["'false' if '", gz_headless, "' == 'true' else 'true'"]
+                            ),
+                            "rviz": "false",
                             "world": world,
+                            "spawn_robot": "true",
+                            "drive": "false",
                             "spawn_x": spawn_x,
                             "spawn_y": spawn_y,
                             "spawn_z": spawn_z,
                             "spawn_yaw": spawn_yaw,
-                            "fake_laser_map_yaml": PythonExpression(
-                                [
-                                    "'",
-                                    world,
-                                    "' == '",
-                                    default_world,
-                                    "' and '",
-                                    map_yaml,
-                                    "' or ''",
-                                ]
-                            ),
+                            "use_sim_time": use_sim_time,
                         }.items(),
                     )
                 ],
+                condition=IfCondition(use_gazebo),
             ),
             Node(
                 package="nav2_map_server",
@@ -167,7 +161,7 @@ def generate_launch_description() -> LaunchDescription:
                 respawn_delay=2.0,
                 parameters=[configured_params],
                 arguments=["--ros-args", "--log-level", log_level],
-                remappings=remappings,
+                remappings=remappings + [("cmd_vel", "cmd_vel_nav")],
             ),
             Node(
                 package="nav2_bt_navigator",
@@ -200,7 +194,8 @@ def generate_launch_description() -> LaunchDescription:
                 respawn_delay=2.0,
                 parameters=[configured_params],
                 arguments=["--ros-args", "--log-level", log_level],
-                remappings=remappings + [("cmd_vel", "cmd_vel_nav"), ("cmd_vel_smoothed", "cmd_vel_nav_smoothed")],
+                remappings=remappings
+                + [("cmd_vel", "cmd_vel_nav"), ("cmd_vel_smoothed", "/cmd_vel")],
             ),
             TimerAction(
                 period=lifecycle_delay_sec,

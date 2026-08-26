@@ -5,7 +5,7 @@
 ## 目录
 
 ```text
-robot_sim_demo/
+ROS2/
 └── src/robot_sim_demo/
     ├── launch/       Gazebo 启动文件
     ├── config/       ROS-Gazebo 话题桥配置
@@ -63,14 +63,6 @@ ros2 topic pub /cmd_vel geometry_msgs/msg/Twist \
 ros2 topic echo /odom --once
 ```
 
-录制只包含 Gazebo 3D 窗口，不包含桌面、终端、RViz 或相机话题。保持 Gazebo 窗口可见，在 PowerShell 中执行：
-
-```powershell
-.\tools\record_gazebo_window.ps1 -Duration 16
-```
-
-生成文件：`media/robot_patrol.gif`
-
 ## Gazebo 运动演示
 
 ![机器人在 ISCAS Museum 中巡检](media/robot_patrol.gif)
@@ -85,4 +77,4 @@ ros2 topic hz /camera/image_raw
 gz model -l
 ```
 
-该 Wheeltec Mini AKM 机器人现在使用 Gazebo Sim Harmonic 原生 `DiffDrive` 系统，初始位置在博物馆场景中心的开放区域，支持 `/cmd_vel`、`/odom` 和 `/tf`。默认巡航节点发布四段直行与转弯动作；设置 `drive:=false` 后可手动控制。两个原始门洞已用与相邻墙面对齐的墙体封闭。Gazebo Sim 当前只输出相机图像，因此包内的 `camera_info_publisher` 按 SDF 中的 320x180、1.0472 rad 参数发布匹配的 `/camera/camera_info`，并在收到 `/clock` 后使用仿真时间戳。
+该 Wheeltec Mini AKM 机器人现在使用 Gazebo Sim Harmonic 原生 `DiffDrive` 系统，初始位置在博物馆场景中心的开放区域，支持 `/cmd_vel`、`/odom` 和 `/tf`。默认巡航节点发布四段直行与转弯动作；设置 `drive:=false` 后可手动控制。Gazebo Sim 当前只输出相机图像，因此包内的 `camera_info_publisher` 按 SDF 中的 320x180、1.0472 rad 参数发布匹配的 `/camera/camera_info`，并在收到 `/clock` 后使用仿真时间戳。

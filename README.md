@@ -1,4 +1,4 @@
-# robot_sim_demo — ROS 2 仿真与教学示例工作区
+# ROS 2 仿真与教学
 
 本工作区包含 31 个 ROS 2 包，涵盖话题通信、服务通信、动作通信、参数系统、TF 坐标变换、URDF 建模、Gazebo 仿真、SLAM 建图和 Nav2 自主导航，以及一个完整的 ISCAS Museum 仿真场景。
 

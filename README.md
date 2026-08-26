@@ -76,8 +76,8 @@ sudo apt update && sudo apt install -y \
 ### 2. 克隆工作区
 
 ```bash
-git clone <仓库地址> robot_sim_demo
-cd robot_sim_demo
+git clone https://github.com/YunxiangLuo/ROS2.git
+cd ROS2
 ```
 
 ### 3. 编译全部包
@@ -87,8 +87,6 @@ source /opt/ros/jazzy/setup.bash
 colcon build --symlink-install
 source install/setup.bash
 ```
-
-编译结果：`Summary: 31 packages finished`（约 7 分钟）。
 
 ## 包清单
 
@@ -220,7 +218,7 @@ done
 | `tf_demo_py` | 1 | 通过 |
 | **合计** | **29** | **全部通过** |
 
-![Nav2 顺时针循环导航](nav2.gif)
+![Nav2 导航](nav2.gif)
 
 ## 嵌套包说明
 

@@ -17,22 +17,22 @@
         <geometry><box><size>0.23 0.16 0.055</size></box></geometry>
       </collision>
       <visual name="base_visual">
-        <geometry><mesh><uri>model://wheeltec_robot_urdf/meshes/mini_akm_robot_meshes/base_link.STL</uri></mesh></geometry>
+        <geometry><mesh><uri>model://wheeltec_robot/meshes/base_link.STL</uri></mesh></geometry>
         <material><ambient>0.025 0.040 0.055 1</ambient><diffuse>0.065 0.095 0.125 1</diffuse><specular>0.55 0.70 0.78 1</specular><shininess>75</shininess></material>
       </visual>
       <visual name="front_visual">
         <pose>0.14383 -0.000013 0.01 0 0 0</pose>
-        <geometry><mesh><uri>model://wheeltec_robot_urdf/meshes/mini_akm_robot_meshes/front_link.STL</uri></mesh></geometry>
+        <geometry><mesh><uri>model://wheeltec_robot/meshes/front_link.STL</uri></mesh></geometry>
         <material><ambient>0.48 0.055 0.012 1</ambient><diffuse>0.82 0.16 0.025 1</diffuse><specular>0.80 0.38 0.12 1</specular><shininess>55</shininess></material>
       </visual>
       <visual name="controller_visual">
         <pose>-0.000357 -0.04684 0.0515 0 0 0</pose>
-        <geometry><mesh><uri>model://wheeltec_robot_urdf/meshes/mini_akm_robot_meshes/controller_link.STL</uri></mesh></geometry>
+        <geometry><mesh><uri>model://wheeltec_robot/meshes/controller_link.STL</uri></mesh></geometry>
         <material><ambient>0.035 0.050 0.065 1</ambient><diffuse>0.10 0.14 0.18 1</diffuse><specular>0.50 0.68 0.78 1</specular><shininess>70</shininess></material>
       </visual>
       <visual name="camera_visual">
         <pose>0.11365 0.000165 0.0762 0 0 0</pose>
-        <geometry><mesh><uri>model://wheeltec_robot_urdf/meshes/mini_akm_robot_meshes/camera_link.STL</uri></mesh></geometry>
+        <geometry><mesh><uri>model://wheeltec_robot/meshes/camera_link.STL</uri></mesh></geometry>
         <material><ambient>0.46 0.50 0.56 1</ambient><diffuse>0.68 0.73 0.80 1</diffuse><specular>0.98 0.98 1.00 1</specular><shininess>100</shininess></material>
       </visual>
       <visual name="camera_lens">
@@ -51,14 +51,14 @@
       <pose>-0.069657 0.07975 0.0162 0 0 0</pose>
       <inertial><mass>0.0457</mass><inertia><ixx>0.000018</ixx><iyy>0.000031</iyy><izz>0.000018</izz></inertia></inertial>
       <collision name="lb_collision"><pose>0 0 0 0 1.5708 0</pose><geometry><cylinder><radius>0.033</radius><length>0.025</length></cylinder></geometry></collision>
-      <visual name="lb_visual"><geometry><mesh><uri>model://wheeltec_robot_urdf/meshes/mini_akm_robot_meshes/lb_link.STL</uri></mesh></geometry><material><ambient>0.012 0.015 0.020 1</ambient><diffuse>0.025 0.032 0.042 1</diffuse><specular>0.12 0.16 0.20 1</specular><shininess>35</shininess></material></visual>
+      <visual name="lb_visual"><geometry><mesh><uri>model://wheeltec_robot/meshes/lb_link.STL</uri></mesh></geometry><material><ambient>0.012 0.015 0.020 1</ambient><diffuse>0.025 0.032 0.042 1</diffuse><specular>0.12 0.16 0.20 1</specular><shininess>35</shininess></material></visual>
       <visual name="lb_hub"><pose>0 0 0 0 1.5708 0</pose><geometry><cylinder><radius>0.012</radius><length>0.028</length></cylinder></geometry><material><ambient>0.28 0.32 0.36 1</ambient><diffuse>0.52 0.58 0.64 1</diffuse><specular>0.90 0.95 1.00 1</specular><shininess>90</shininess></material></visual>
     </link>
     <link name="rb_link">
       <pose>-0.069657 -0.079776 0.0162 0 0 0</pose>
       <inertial><mass>0.0457</mass><inertia><ixx>0.000018</ixx><iyy>0.000031</iyy><izz>0.000018</izz></inertia></inertial>
       <collision name="rb_collision"><pose>0 0 0 0 1.5708 0</pose><geometry><cylinder><radius>0.033</radius><length>0.025</length></cylinder></geometry></collision>
-      <visual name="rb_visual"><geometry><mesh><uri>model://wheeltec_robot_urdf/meshes/mini_akm_robot_meshes/rb_link.STL</uri></mesh></geometry><material><ambient>0.012 0.015 0.020 1</ambient><diffuse>0.025 0.032 0.042 1</diffuse><specular>0.12 0.16 0.20 1</specular><shininess>35</shininess></material></visual>
+      <visual name="rb_visual"><geometry><mesh><uri>model://wheeltec_robot/meshes/rb_link.STL</uri></mesh></geometry><material><ambient>0.012 0.015 0.020 1</ambient><diffuse>0.025 0.032 0.042 1</diffuse><specular>0.12 0.16 0.20 1</specular><shininess>35</shininess></material></visual>
       <visual name="rb_hub"><pose>0 0 0 0 1.5708 0</pose><geometry><cylinder><radius>0.012</radius><length>0.028</length></cylinder></geometry><material><ambient>0.28 0.32 0.36 1</ambient><diffuse>0.52 0.58 0.64 1</diffuse><specular>0.90 0.95 1.00 1</specular><shininess>90</shininess></material></visual>
     </link>
     <joint name="lb_joint" type="revolute"><parent>base_link</parent><child>lb_link</child><axis><xyz>0 -1 0</xyz><limit><lower>-1e16</lower><upper>1e16</upper></limit></axis></joint>
@@ -67,23 +67,23 @@
     <link name="left_link">
       <pose>0.073593 0.051987 0.022 0 0 0</pose>
       <collision name="left_collision"><geometry><box><size>0.065 0.04 0.035</size></box></geometry></collision>
-      <visual name="left_visual"><geometry><mesh><uri>model://wheeltec_robot_urdf/meshes/mini_akm_robot_meshes/left_link.STL</uri></mesh></geometry><material><ambient>0.025 0.040 0.055 1</ambient><diffuse>0.075 0.11 0.145 1</diffuse><specular>0.55 0.70 0.78 1</specular><shininess>70</shininess></material></visual>
+      <visual name="left_visual"><geometry><mesh><uri>model://wheeltec_robot/meshes/left_link.STL</uri></mesh></geometry><material><ambient>0.025 0.040 0.055 1</ambient><diffuse>0.075 0.11 0.145 1</diffuse><specular>0.55 0.70 0.78 1</specular><shininess>70</shininess></material></visual>
     </link>
     <link name="right_link">
       <pose>0.073593 -0.052013 0.022 0 0 0</pose>
       <collision name="right_collision"><geometry><box><size>0.065 0.04 0.035</size></box></geometry></collision>
-      <visual name="right_visual"><geometry><mesh><uri>model://wheeltec_robot_urdf/meshes/mini_akm_robot_meshes/right_link.STL</uri></mesh></geometry><material><ambient>0.025 0.040 0.055 1</ambient><diffuse>0.075 0.11 0.145 1</diffuse><specular>0.55 0.70 0.78 1</specular><shininess>70</shininess></material></visual>
+      <visual name="right_visual"><geometry><mesh><uri>model://wheeltec_robot/meshes/right_link.STL</uri></mesh></geometry><material><ambient>0.025 0.040 0.055 1</ambient><diffuse>0.075 0.11 0.145 1</diffuse><specular>0.55 0.70 0.78 1</specular><shininess>70</shininess></material></visual>
     </link>
     <link name="lf_link">
       <pose>0.073593 0.082113 0.011 0 0 0</pose>
       <collision name="lf_collision"><pose>0 0 0 0 1.5708 0</pose><geometry><cylinder><radius>0.033</radius><length>0.025</length></cylinder></geometry></collision>
-      <visual name="lf_visual"><geometry><mesh><uri>model://wheeltec_robot_urdf/meshes/mini_akm_robot_meshes/lf_link.STL</uri></mesh></geometry><material><ambient>0.012 0.015 0.020 1</ambient><diffuse>0.025 0.032 0.042 1</diffuse><specular>0.12 0.16 0.20 1</specular><shininess>35</shininess></material></visual>
+      <visual name="lf_visual"><geometry><mesh><uri>model://wheeltec_robot/meshes/lf_link.STL</uri></mesh></geometry><material><ambient>0.012 0.015 0.020 1</ambient><diffuse>0.025 0.032 0.042 1</diffuse><specular>0.12 0.16 0.20 1</specular><shininess>35</shininess></material></visual>
       <visual name="lf_hub"><pose>0 0 0 0 1.5708 0</pose><geometry><cylinder><radius>0.012</radius><length>0.028</length></cylinder></geometry><material><ambient>0.28 0.32 0.36 1</ambient><diffuse>0.52 0.58 0.64 1</diffuse><specular>0.90 0.95 1.00 1</specular><shininess>90</shininess></material></visual>
     </link>
     <link name="rf_link">
       <pose>0.073593 -0.082139 0.011 0 0 0</pose>
       <collision name="rf_collision"><pose>0 0 0 0 1.5708 0</pose><geometry><cylinder><radius>0.033</radius><length>0.025</length></cylinder></geometry></collision>
-      <visual name="rf_visual"><geometry><mesh><uri>model://wheeltec_robot_urdf/meshes/mini_akm_robot_meshes/rf_link.STL</uri></mesh></geometry><material><ambient>0.012 0.015 0.020 1</ambient><diffuse>0.025 0.032 0.042 1</diffuse><specular>0.12 0.16 0.20 1</specular><shininess>35</shininess></material></visual>
+      <visual name="rf_visual"><geometry><mesh><uri>model://wheeltec_robot/meshes/rf_link.STL</uri></mesh></geometry><material><ambient>0.012 0.015 0.020 1</ambient><diffuse>0.025 0.032 0.042 1</diffuse><specular>0.12 0.16 0.20 1</specular><shininess>35</shininess></material></visual>
       <visual name="rf_hub"><pose>0 0 0 0 1.5708 0</pose><geometry><cylinder><radius>0.012</radius><length>0.028</length></cylinder></geometry><material><ambient>0.28 0.32 0.36 1</ambient><diffuse>0.52 0.58 0.64 1</diffuse><specular>0.90 0.95 1.00 1</specular><shininess>90</shininess></material></visual>
     </link>
     <joint name="left_joint" type="fixed"><parent>base_link</parent><child>left_link</child></joint>
@@ -93,7 +93,7 @@
 
     <link name="laser_link">
       <pose>0.051343 -0.000013 0.094524 0 0 3.1416</pose>
-      <visual name="laser_visual"><geometry><mesh><uri>model://wheeltec_robot_urdf/meshes/mini_akm_robot_meshes/laser.STL</uri></mesh></geometry><material><ambient>0.16 0.19 0.22 1</ambient><diffuse>0.32 0.38 0.44 1</diffuse><specular>0.92 0.96 1.00 1</specular><shininess>95</shininess></material></visual>
+      <visual name="laser_visual"><geometry><mesh><uri>model://wheeltec_robot/meshes/laser.STL</uri></mesh></geometry><material><ambient>0.16 0.19 0.22 1</ambient><diffuse>0.32 0.38 0.44 1</diffuse><specular>0.92 0.96 1.00 1</specular><shininess>95</shininess></material></visual>
       <sensor name="laser" type="gpu_lidar">
         <always_on>true</always_on><update_rate>8</update_rate><topic>/scan</topic><gz_frame_id>laser_link</gz_frame_id><visualize>true</visualize>
         <ray><scan><horizontal><samples>240</samples><resolution>1</resolution><min_angle>-3.14159</min_angle><max_angle>3.14159</max_angle></horizontal></scan><range><min>0.03</min><max>8.0</max><resolution>0.01</resolution></range><noise><type>gaussian</type><mean>0</mean><stddev>0.002</stddev></noise></ray>

@@ -118,6 +118,6 @@ class SimulationAssetTest(unittest.TestCase):
             "camera_link.STL",
         ):
             self.assertIn(
-                f"model://wheeltec_robot_urdf/meshes/mini_akm_robot_meshes/{mesh_name}",
+                f"model://wheeltec_robot/meshes/{mesh_name}",
                 model_text,
             )

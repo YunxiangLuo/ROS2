@@ -8,6 +8,7 @@ from launch import LaunchDescription
 from launch.actions import (
     DeclareLaunchArgument,
     IncludeLaunchDescription,
+    OpaqueFunction,
     SetEnvironmentVariable,
     TimerAction,
 )
@@ -100,6 +101,20 @@ def generate_launch_description() -> LaunchDescription:
         ],
     )
 
+    def set_resource_paths(context):
+        """Set os.environ so gz_sim.launch.py's OpaqueFunction picks them up."""
+        models_dir = str(share / "models")
+        urdf_dir = str(share / "wheeltec_robot_urdf")
+        existing_gz = os.environ.get("GZ_SIM_RESOURCE_PATH", "")
+        os.environ["GZ_SIM_RESOURCE_PATH"] = os.pathsep.join(
+            filter(None, [models_dir, urdf_dir, existing_gz])
+        )
+        existing_ign = os.environ.get("IGN_GAZEBO_RESOURCE_PATH", "")
+        os.environ["IGN_GAZEBO_RESOURCE_PATH"] = os.pathsep.join(
+            filter(None, [models_dir, urdf_dir, existing_ign])
+        )
+        return None
+
     return LaunchDescription(
         [
             DeclareLaunchArgument("gui", default_value="true"),
@@ -119,26 +134,7 @@ def generate_launch_description() -> LaunchDescription:
             DeclareLaunchArgument("spawn_z", default_value="0.03"),
             DeclareLaunchArgument("spawn_yaw", default_value="0.0"),
             DeclareLaunchArgument("use_sim_time", default_value="true"),
-            SetEnvironmentVariable(
-                name="GZ_SIM_RESOURCE_PATH",
-                value=[
-                    str(models),
-                    os.pathsep,
-                    str(share),
-                    os.pathsep,
-                    os.environ.get("GZ_SIM_RESOURCE_PATH", ""),
-                ],
-            ),
-            SetEnvironmentVariable(
-                name="IGN_GAZEBO_RESOURCE_PATH",
-                value=[
-                    str(models),
-                    os.pathsep,
-                    str(share),
-                    os.pathsep,
-                    os.environ.get("IGN_GAZEBO_RESOURCE_PATH", ""),
-                ],
-            ),
+            OpaqueFunction(function=set_resource_paths),
             gazebo_gui,
             gazebo_headless,
             Node(

@@ -19,7 +19,7 @@ ROS2/
 
 ## 环境
 
-建议使用 ROS 2 Jazzy、Gazebo Sim Harmonic 和 WSL2/WSLg。安装至少需要：
+建议使用 ROS 2 Jazzy、Gazebo Sim Harmonic 和 Ubuntu 24.04 或 WSL2/WSLg。安装至少需要：
 
 ```bash
 sudo apt install -y ros-jazzy-ros-gz-sim ros-jazzy-ros-gz-bridge \

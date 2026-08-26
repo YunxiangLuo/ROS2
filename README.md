@@ -5,7 +5,7 @@
 ## 目录
 
 ```text
-robot_sim_demo/
+ROS2/
 └── src/robot_sim_demo/
     ├── launch/       Gazebo 启动文件
     ├── config/       ROS-Gazebo 话题桥配置

@@ -1,8 +1,11 @@
 # lab_code — ROS 2 教学实验代码
 
 本目录包含 ROS 2 Jazzy 教学课程的实验代码，覆盖节点、话题、服务、动作、参数、
-TF、URDF、Gazebo 仿真、SLAM、Nav2、MoveIt 2 与视觉等主题。经去重、删除与
-重排后共 **21 个章节**（ch01-ch21）。
+TF、URDF、Gazebo 仿真、SLAM、Nav2、MoveIt 2、视觉与 CARLA 自动驾驶等主题。
+共 **31 个章节**（ch01-ch31）：
+
+- **ch01-ch21**：ROS 2 基础与机器人仿真（标准 ROS 2 包，含测试）
+- **ch22-ch31**：CARLA 自动驾驶实验（实验脚本，配合 `src/` 下 av_* 包）
 
 ## 环境
 
@@ -11,20 +14,26 @@ TF、URDF、Gazebo 仿真、SLAM、Nav2、MoveIt 2 与视觉等主题。经去�
 | 操作系统 | Ubuntu 24.04 (WSL2) |
 | ROS 2 | Jazzy Jalisco |
 | Gazebo | Sim Harmonic (v8) |
+| CARLA | 0.9.13+（ch22-ch31） |
 | 构建工具 | colcon + ament |
 
 ## 仿真分工
 
-| 仿真场景 | 对应包 | 用于章节 |
-|----------|--------|----------|
+| 仿真场景 | 对应包/工具 | 用于章节 |
+|----------|-------------|----------|
 | 移动机器人仿真 | `robot_sim_demo`（Wheeltec + ISCAS Museum） | ch09-ch11、ch13-ch14 |
 | xArm6 机械臂仿真 | `xarm_ros2_arm_only`（Gazebo + MoveIt 2 + RViz） | ch15、ch17-ch18、ch21 |
+| CARLA 自动驾驶 | CARLA 0.9.13+ + `carla_ros_bridge` + av_* 包 | ch22-ch31 |
 
 `robot_sim_demo` 与 `xarm_ros2_arm_only` 均位于 `src/` 下，单独构建即可。
 视觉章节（ch19、ch21）的相机输入可来自 `robot_sim_demo` 的 `/camera/image_raw`
-或真实 USB/RealSense 相机。
+或真实 USB/RealSense 相机。CARLA 章节需先安装 CARLA 仿真器（见
+[ch22_lab/install_carla.sh](ch22_lab/install_carla.sh)）并启动
+`carla_ros_bridge`。
 
 ## 章节清单与测试状态
+
+### ROS 2 基础与机器人仿真（ch01-ch21）
 
 | 章节 | 包名 | 内容 | 测试 | 结果 |
 |------|------|------|------|------|
@@ -52,11 +61,31 @@ TF、URDF、Gazebo 仿真、SLAM、Nav2、MoveIt 2 与视觉等主题。经去�
 | ch20 | — | 占位章节（README） | — | — |
 | ch21 | `vision_pickup_lab` | 视觉引导抓取（AR + xArm） | 5 | ✅ |
 
-**合计 75 项测试全部通过。**
+**ch01-ch21 合计 75 项测试全部通过。**
+
+### CARLA 自动驾驶实验（ch22-ch31，实验脚本）
+
+| 章节 | 脚本 | 内容 | 测试 |
+|------|------|------|------|
+| ch22 | `explore_carla.py`、`spawn_vehicles.py` | CARLA 仿真器入门：环境探索、地图信息、多车生成 | — |
+| ch23 | `spawn_ego.py`、`check_topics.py` | CARLA-ROS2 桥接与 Ego 车辆生成、话题检查 | — |
+| ch24 | `sensor_config.py`、`visualize_sensors.py` | 多传感器配置、数据采集（rosbag）与可视化 | — |
+| ch25 | `global_planner.py`、`waypoint_pub.py` | 全局路径规划（A*）、地图可视化、航点发布 | — |
+| ch26 | `pid_controller.py`、`pure_pursuit.py` | 纵向 PID、横向 Pure Pursuit、一体化车辆控制 | — |
+| ch27 | `localization_eval.py`、`tf_broadcaster.py` | LiDAR-IMU-GNSS 融合定位（EKF）与评估 | — |
+| ch28 | `yolo_detector.py`、`lidar_cluster.py` | YOLO 目标检测、LiDAR DBSCAN 聚类、卡尔曼跟踪 | — |
+| ch29 | `fsm_decision.py`、`traffic_light_detector.py` | 行为决策（FSM：巡航/跟车/停车）与交通灯感知 | — |
+| ch30 | `safety_monitor.py`、`fault_injector.py` | 安全验证：碰撞监测/AEB、故障注入、集成测试、评估指标 | — |
+| ch31 | `main_pipeline.py`、`town_demo.sh` | 综合项目：CARLA Town03 全流程自动驾驶演示 | — |
+
+> ch22-ch31 为裸 Python/Shell 实验脚本（非 ROS 2 包），直接 `python3` /
+> `bash` 运行；规范化实现由 `src/` 下的 av_* 包提供（`av_carla_interfaces`、
+> `av_sensor_kit`、`av_perception_py`、`av_planning_py`、`av_control_cpp`、
+> `av_safety_monitor`），部分脚本支持 `--test` 自检。
 
 ## 构建
 
-所有章节均为标准 ROS 2 包，在工作区根目录一次性构建：
+ch01-ch21 为标准 ROS 2 包，在工作区根目录一次性构建：
 
 ```bash
 source /opt/ros/jazzy/setup.bash
@@ -73,7 +102,18 @@ colcon build --symlink-install --packages-select realsense_lab
 ```
 
 > 说明：ch17/ch18/ch21 依赖 `course_lab_utils` 与 `course_lab_interfaces`
->（位于 `src/` 下），colcon 会自动按依赖顺序构建。
+> >（位于 `src/` 下），colcon 会自动按依赖顺序构建。
+
+CARLA 章节（ch22-ch31）无需 colcon 构建，按需安装依赖：
+
+```bash
+# CARLA 仿真器（一键安装见 ch22_lab/install_carla.sh）
+cd ~/carla && ./CarlaUE4.sh -quality-level=Low
+
+# Python 依赖
+pip install carla numpy opencv-python
+pip install ultralytics scikit-learn filterpy   # ch28 可选
+```
 
 ## 测试
 
@@ -86,6 +126,12 @@ for pkg in lifecycle_demo hello_pkg sensor_pub topic_demo service_demo \
   colcon test --packages-select $pkg
 done
 colcon test-result --all
+```
+
+CARLA 控制算法自检（无需仿真器）：
+
+```bash
+cd ch26_lab && python3 pid_controller.py --test && python3 pure_pursuit.py --test
 ```
 
 ## 目录结构
@@ -113,6 +159,16 @@ lab_code/
 ├── ch19_lab/vision_detection_lab/    ✅ 视觉检测
 ├── ch20_lab/                          占位章节
 ├── ch21_lab/vision_pickup_lab/       ✅ 视觉引导抓取
+├── ch22_lab/                          CARLA 入门与车辆生成（脚本）
+├── ch23_lab/                          CARLA-ROS2 桥接与 Ego 生成（脚本）
+├── ch24_lab/                          多传感器配置与数据采集（脚本）
+├── ch25_lab/                          全局路径规划与航点（脚本）
+├── ch26_lab/                          车身控制 PID/Pure Pursuit（脚本）
+├── ch27_lab/                          多传感器融合定位 EKF（脚本）
+├── ch28_lab/                          目标检测与跟踪（脚本）
+├── ch29_lab/                          行为决策与交通灯（脚本）
+├── ch30_lab/                          安全验证与故障注入（脚本）
+├── ch31_lab/                          综合自动驾驶项目（脚本）
 └── README.md                          本文件
 ```
 

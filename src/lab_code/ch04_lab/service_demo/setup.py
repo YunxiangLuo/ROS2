@@ -10,6 +10,7 @@ setup(
     install_requires=['setuptools'], zip_safe=True,
     maintainer='Student', maintainer_email='student@example.com',
     description='服务通信实验包', license='Apache-2.0',
+    tests_require=['pytest'],
     entry_points={
         'console_scripts': [
             'server = service_demo.server:main',

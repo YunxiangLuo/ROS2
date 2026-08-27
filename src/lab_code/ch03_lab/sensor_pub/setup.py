@@ -17,6 +17,7 @@ setup(
     maintainer_email='student@example.com',
     description='自定义消息发布实验包',
     license='Apache-2.0',
+    tests_require=['pytest'],
     entry_points={
         'console_scripts': [
             'sensor_pub_node = sensor_pub.sensor_publisher:main',

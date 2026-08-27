@@ -6,6 +6,14 @@ from rclpy.node import Node
 from geometry_msgs.msg import Twist
 
 
+def make_twist(linear, angular):
+    """Create a planar velocity command for the square trajectory."""
+    msg = Twist()
+    msg.linear.x = float(linear)
+    msg.angular.z = float(angular)
+    return msg
+
+
 class SquareDriver(Node):
     def __init__(self):
         super().__init__('square_driver')
@@ -15,9 +23,7 @@ class SquareDriver(Node):
         self.drive_square()
 
     def move(self, linear, angular, duration):
-        msg = Twist()
-        msg.linear.x = linear
-        msg.angular.z = angular
+        msg = make_twist(linear, angular)
         end_time = time.time() + duration
         while time.time() < end_time and rclpy.ok():
             self.pub.publish(msg)
@@ -39,8 +45,10 @@ class SquareDriver(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    SquareDriver()
-    rclpy.shutdown()
+    try:
+        SquareDriver()
+    finally:
+        rclpy.shutdown()
 
 
 if __name__ == '__main__':

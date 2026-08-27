@@ -1,56 +1,37 @@
+"""Ch09 Gazebo 仿真启动 — 委托 robot_sim_demo 的 Gazebo Harmonic 入口.
+
+本工作区的移动机器人仿真统一使用 `robot_sim_demo/gazebo2.launch.py`（Gazebo
+Sim Harmonic + ros_gz 桥接 + Wheeltec 机器人）。此 launch 不再维护独立的
+Gazebo Classic 入口；它仅转发常用参数，便于教学时直接 `ros2 launch
+sim_demo sim_bringup.launch.py`。
+"""
 import os
-from launch import LaunchDescription
-from launch.actions import IncludeLaunchDescription, DeclareLaunchArgument
-from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch_ros.actions import Node
-from launch.conditions import IfCondition
-from launch.substitutions import LaunchConfiguration
+
 from ament_index_python.packages import get_package_share_directory
+from launch import LaunchDescription
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.substitutions import LaunchConfiguration
 
 
 def generate_launch_description():
-    pkg_path = get_package_share_directory('sim_demo')
-    world_path = LaunchConfiguration('world', default=os.path.join(pkg_path, 'worlds', 'empty.world'))
-    use_gazebo = LaunchConfiguration('use_gazebo', default='true')
-    use_rviz = LaunchConfiguration('use_rviz', default='false')
-
     return LaunchDescription([
-        DeclareLaunchArgument('use_gazebo', default_value='true',
-                              description='是否启动 Gazebo'),
-        DeclareLaunchArgument('use_rviz', default_value='false',
-                              description='是否启动 RViz2'),
-        DeclareLaunchArgument('world', default_value=os.path.join(pkg_path, 'worlds', 'empty.world'),
-                              description='Gazebo 世界文件路径'),
-
-        # 启动 Gazebo 仿真
+        DeclareLaunchArgument('gui', default_value='true',
+                              description='启动 Gazebo GUI'),
+        DeclareLaunchArgument('rviz', default_value='false',
+                              description='启动 RViz2'),
+        DeclareLaunchArgument('drive', default_value='true',
+                              description='启动自动巡航驱动'),
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource([
-                get_package_share_directory('gazebo_ros'),
-                '/launch/gazebo.launch.py'
+                os.path.join(
+                    get_package_share_directory('robot_sim_demo'),
+                    'launch', 'gazebo2.launch.py'),
             ]),
-            condition=IfCondition(use_gazebo),
-            launch_arguments={'world': world_path}.items(),
-        ),
-
-        # Spawn 机器人模型
-        Node(
-            package='gazebo_ros',
-            executable='spawn_entity.py',
-            arguments=[
-                '-entity', 'xbot',
-                '-topic', 'robot_description',
-                '-x', '0.0', '-y', '0.0', '-z', '0.1',
-            ],
-            output='screen',
-            condition=IfCondition(use_gazebo),
-        ),
-
-        # RViz2 (可选)
-        Node(
-            package='rviz2',
-            executable='rviz2',
-            name='rviz2',
-            condition=IfCondition(use_rviz),
-            output='screen',
+            launch_arguments={
+                'gui': LaunchConfiguration('gui'),
+                'rviz': LaunchConfiguration('rviz'),
+                'drive': LaunchConfiguration('drive'),
+            }.items(),
         ),
     ])

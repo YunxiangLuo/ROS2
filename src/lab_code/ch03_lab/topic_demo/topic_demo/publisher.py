@@ -3,6 +3,14 @@ from rclpy.node import Node
 from geometry_msgs.msg import Point
 
 
+def make_gps_point(x):
+    """Build the deterministic GPS sample used by the publisher."""
+    msg = Point()
+    msg.x = float(x)
+    msg.y = 2.0 * msg.x + 1.0
+    return msg
+
+
 class GpsPublisher(Node):
     """模拟GPS传感器数据发布节点 — 周期发布Point消息"""
 
@@ -16,10 +24,7 @@ class GpsPublisher(Node):
         self.x = 0.0
 
     def publish_position(self):
-        msg = Point()
-        msg.x = self.x
-        msg.y = 2 * self.x + 1
-        msg.z = 0.0
+        msg = make_gps_point(self.x)
         self.publisher.publish(msg)
         self.get_logger().info(
             f'发布 GPS 位置: x={msg.x:.2f}, y={msg.y:.2f}')
@@ -28,8 +33,14 @@ class GpsPublisher(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    rclpy.spin(GpsPublisher())
-    rclpy.shutdown()
+    node = GpsPublisher()
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        node.destroy_node()
+        rclpy.shutdown()
 
 
 if __name__ == '__main__':

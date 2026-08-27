@@ -9,6 +9,7 @@ from action_demo_interfaces.action import DoDishes
 class DoDishesServer(Node):
     def __init__(self):
         super().__init__('do_dishes_server')
+        self.declare_parameter('step_duration_sec', 1.0)
         self.action_server = ActionServer(
             self, DoDishes, 'do_dishes',
             execute_callback=self.execute,
@@ -24,31 +25,35 @@ class DoDishesServer(Node):
         return CancelResponse.ACCEPT
 
     async def execute(self, goal_handle):
-        total = goal_handle.request.total_dishes
+        dishwasher_id = goal_handle.request.dishwasher_id
+        duration = float(self.get_parameter('step_duration_sec').value)
         fb = DoDishes.Feedback()
-        for i in range(1, total + 1):
+        for step in range(1, 6):
             if goal_handle.is_cancel_requested:
                 goal_handle.canceled()
                 result = DoDishes.Result()
-                result.cleaned_dishes = i - 1
-                result.success = False
+                result.total_dishes_cleaned = (step - 1) * dishwasher_id
                 return result
-            await asyncio.sleep(1.0)
-            fb.progress = i / total
-            fb.current_dish = i
+            await asyncio.sleep(duration)
+            fb.percent_complete = float(step * 20)
             goal_handle.publish_feedback(fb)
-            self.get_logger().info(f'进度: {fb.progress:.0%} ({i}/{total})')
+            self.get_logger().info(f'进度: {fb.percent_complete:.0f}%')
         goal_handle.succeed()
         result = DoDishes.Result()
-        result.cleaned_dishes = total
-        result.success = True
+        result.total_dishes_cleaned = dishwasher_id * 5
         return result
 
 
 def main(args=None):
     rclpy.init(args=args)
-    rclpy.spin(DoDishesServer())
-    rclpy.shutdown()
+    node = DoDishesServer()
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        node.destroy_node()
+        rclpy.shutdown()
 
 
 if __name__ == '__main__':

@@ -6,6 +6,13 @@
 - ROS 2 Jazzy
 - 依赖：`action_demo_interfaces`
 
+## 安装
+
+```bash
+source /opt/ros/jazzy/setup.bash
+rosdep install --from-paths src/lab_code/ch05_lab src/action_demo_interfaces --ignore-src -r -y
+```
+
 ## 简介
 
 本包演示 ROS 2 Action 通信。服务端提供 `/do_dishes` 动作，使用异步执行回调，每秒反馈进度；客户端发送目标并接收结果。
@@ -16,10 +23,6 @@
 | --- | --- | --- | --- |
 | `server` | 服务端 | `/do_dishes` | 异步 `execute` 回调，每秒发布 feedback |
 | `client` | 客户端 | `/do_dishes` | 发送目标，等待结果 |
-
-## 已知问题
-
-本包中 action 的字段名与 `action_demo_interfaces` 中 `DoDishes.action` 的定义不完全匹配，可能需要根据接口定义调整源码后再编译运行。
 
 ## 构建命令
 
@@ -38,3 +41,18 @@ ros2 run action_demo server
 # 终端 2：启动客户端
 ros2 run action_demo client
 ```
+
+## 验证方法
+
+```bash
+ros2 interface show action_demo_interfaces/action/DoDishes
+ros2 action list
+colcon test --packages-select action_demo
+colcon test-result --verbose
+```
+
+当前接口字段固定为 `dishwasher_id`、`total_dishes_cleaned` 和 `percent_complete`；测试会直接检查这三个字段。
+
+## 运行结果截图
+
+![action_demo 运行结果](../docs/images/result.png)

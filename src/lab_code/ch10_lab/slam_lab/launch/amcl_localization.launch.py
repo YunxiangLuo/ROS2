@@ -43,7 +43,9 @@ def generate_launch_description():
     return LaunchDescription([
         DeclareLaunchArgument(
             'map',
-            default_value=os.path.expanduser('~/maps/lab10_map.yaml'),
+            default_value=os.path.join(
+                get_package_share_directory('navigation_sim_demo_ros2'),
+                'maps', 'Software_Museum.yaml'),
             description='Absolute path to the saved map YAML file',
         ),
         DeclareLaunchArgument(

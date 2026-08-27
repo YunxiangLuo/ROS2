@@ -9,6 +9,7 @@ setup(name=pkg, version='0.1.0', packages=find_packages(exclude=['test']),
         (os.path.join('share', pkg, 'config'), glob('config/*.yaml')),
     ],
     install_requires=['setuptools'], zip_safe=True,
+    tests_require=['pytest'],
     maintainer='Student', description='参数系统实验包',
     license='Apache-2.0',
     entry_points={'console_scripts': [

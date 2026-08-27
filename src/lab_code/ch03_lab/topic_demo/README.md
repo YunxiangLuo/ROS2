@@ -20,6 +20,15 @@
 
 ## 构建命令
 
+## 安装
+
+```bash
+source /opt/ros/jazzy/setup.bash
+rosdep install --from-paths src/lab_code/ch03_lab --ignore-src -r -y
+```
+
+## 构建命令
+
 ```bash
 cd <workspace>
 colcon build --symlink-install --packages-select topic_demo
@@ -36,3 +45,17 @@ ros2 run topic_demo qos_pub
 # 正方形驾驶（需先启动 Gazebo 仿真）
 ros2 run topic_demo square_driver
 ```
+
+## 验证方法
+
+```bash
+ros2 topic echo /gps_position --once
+ros2 topic echo /qos_reliable --once
+colcon test --packages-select topic_demo
+```
+
+测试验证 GPS 点构造、距离计算和 `Twist` 命令逻辑，不等待 5 秒或启动图形界面。
+
+## 运行结果截图
+
+![topic_demo 运行结果](../docs/images/result.png)

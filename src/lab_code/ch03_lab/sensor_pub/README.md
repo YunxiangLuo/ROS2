@@ -18,6 +18,15 @@
 
 ## 构建命令
 
+## 安装
+
+```bash
+source /opt/ros/jazzy/setup.bash
+rosdep install --from-paths src/lab_code/ch03_lab --ignore-src -r -y
+```
+
+## 构建命令
+
 ```bash
 cd <workspace>
 colcon build --symlink-install --packages-select sensor_interfaces sensor_pub
@@ -33,3 +42,18 @@ ros2 run sensor_pub sensor_pub_node
 # 另开终端验证
 ros2 topic echo /sensor_data --once
 ```
+
+## 验证方法
+
+```bash
+ros2 interface show sensor_interfaces/msg/SensorData
+ros2 topic echo /sensor_data --once
+colcon test --packages-select sensor_pub
+colcon test-result --verbose
+```
+
+预期消息包含 `25.5` 摄氏度、`60.0` 百分比、`1013.25` hPa 和 `sensor_01`。测试只调用发布回调。
+
+## 运行结果截图
+
+![sensor_pub 运行结果](../docs/images/result.png)

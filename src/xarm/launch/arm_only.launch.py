@@ -149,6 +149,17 @@ def _launch_setup(context):
         condition=IfCondition(LaunchConfiguration("use_gazebo")),
         actions=[joint_state_spawner],
     )
+    # When Gazebo is disabled, MoveIt uses mock hardware with no
+    # controller_manager, so publish /joint_states from a GUI-less
+    # joint_state_publisher to keep robot_state_publisher fed.
+    mock_joint_state = Node(
+        package="joint_state_publisher",
+        executable="joint_state_publisher",
+        name="arm_only_joint_state_publisher",
+        parameters=[use_sim_time],
+        output="screen",
+        condition=UnlessCondition(LaunchConfiguration("use_gazebo")),
+    )
 
     move_group = TimerAction(
         period=3.0,
@@ -175,6 +186,7 @@ def _launch_setup(context):
         clock_bridge,
         spawn_xarm,
         controller_start,
+        mock_joint_state,
         RegisterEventHandler(
             OnProcessExit(target_action=joint_state_spawner, on_exit=[arm_spawner])
         ),

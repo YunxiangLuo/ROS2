@@ -4,7 +4,7 @@
         {
             "label": "colcon build",
             "type": "shell",
-            "command": "source /opt/ros/humble/setup.bash && colcon build --symlink-install",
+            "command": "colcon build --symlink-install --packages-select lifecycle_demo",
             "group": {
                 "kind": "build",
                 "isDefault": true

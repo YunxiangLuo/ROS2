@@ -22,6 +22,15 @@ string device_id         # 传感器ID
 
 ## 构建命令
 
+## 安装
+
+```bash
+source /opt/ros/jazzy/setup.bash
+rosdep install --from-paths src/lab_code/ch03_lab --ignore-src -r -y
+```
+
+## 构建命令
+
 > 前提：ROS 2 Jazzy 已安装并完成环境配置。
 
 ```bash
@@ -35,4 +44,12 @@ colcon build --symlink-install --packages-select sensor_interfaces
 ```bash
 source /opt/ros/jazzy/setup.bash && source install/setup.bash
 ros2 interface show sensor_interfaces/msg/SensorData
+colcon test --packages-select sensor_interfaces
+colcon test-result --verbose
 ```
+
+测试会实例化生成的 `SensorData` 消息并检查四个字段。
+
+## 运行结果截图
+
+![sensor_interfaces 运行结果](../docs/images/result.png)

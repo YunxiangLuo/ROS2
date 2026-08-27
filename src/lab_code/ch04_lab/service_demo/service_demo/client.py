@@ -15,7 +15,8 @@ class AddTwoIntsClient(Node):
         for i in range(max_retries):
             if self.client.wait_for_service(timeout_sec=2.0):
                 req = AddTwoInts.Request()
-                req.a = a; req.b = b
+                req.a = a
+                req.b = b
                 future = self.client.call_async(req)
                 rclpy.spin_until_future_complete(
                     self, future, timeout_sec=timeout_sec)

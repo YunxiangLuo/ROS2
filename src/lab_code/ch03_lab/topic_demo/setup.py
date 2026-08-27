@@ -17,6 +17,7 @@ setup(
     maintainer_email='student@example.com',
     description='ROS 2 话题通信实验包',
     license='Apache-2.0',
+    tests_require=['pytest'],
     entry_points={
         'console_scripts': [
             'gps_pub = topic_demo.publisher:main',

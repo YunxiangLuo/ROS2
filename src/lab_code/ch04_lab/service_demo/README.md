@@ -5,6 +5,13 @@
 - 包类型：`ament_python`
 - ROS 2 Jazzy
 
+## 安装
+
+```bash
+source /opt/ros/jazzy/setup.bash
+rosdep install --from-paths src/lab_code/ch04_lab --ignore-src -r -y
+```
+
 ## 简介
 
 本包用于练习 ROS 2 服务通信。提供 `example_interfaces/srv/AddTwoInts` 服务实现一个简单的两整数相加示例。
@@ -36,3 +43,18 @@ ros2 run service_demo client
 # 验证（任一终端）
 ros2 service call /add_two_ints example_interfaces/srv/AddTwoInts "{a: 3, b: 4}"
 ```
+
+## 验证方法
+
+```bash
+ros2 service list
+ros2 service call /add_two_ints example_interfaces/srv/AddTwoInts "{a: 3, b: 4}"
+colcon test --packages-select service_demo
+colcon test-result --verbose
+```
+
+预期结果为 `sum: 7`。测试直接调用服务回调，不需要启动服务发现或 GUI。
+
+## 运行结果截图
+
+![service_demo 运行结果](../docs/images/result.png)

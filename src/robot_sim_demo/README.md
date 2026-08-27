@@ -73,7 +73,7 @@ ros2 launch robot_sim_demo gazebo2.launch.py rviz:=false
 ros2 launch robot_sim_demo gazebo2.launch.py drive:=false
 
 # 自定义生成位置
-ros2 launch robot_sim_demo gazebo2.launch.py spawn_x:=0.0 spawn_y:=0.0 spawn_z:=0.03 spawn_yaw:=0.0
+ros2 launch robot_sim_demo gazebo2.launch.py spawn_x:=0.0 spawn_y:=0.0 spawn_z:=0.017 spawn_yaw:=0.0
 
 # 自定义巡航速度
 ros2 launch robot_sim_demo gazebo2.launch.py drive_linear_speed:=0.18 drive_angular_speed:=0.55
@@ -91,7 +91,7 @@ ros2 launch robot_sim_demo gazebo2.launch.py drive_linear_speed:=0.18 drive_angu
 | `drive_angular_speed` | `0.55` | 巡航角速度 (rad/s) |
 | `drive_loop` | `true` | 循环巡航 |
 | `world` | `museum.sdf` | 世界文件路径 |
-| `spawn_x/y/z/yaw` | `0/0/0.03/0` | 机器人生成位姿 |
+| `spawn_x/y/z/yaw` | `0/0/0.017/0` | 机器人生成位姿（z=0.017 为四轮准确接地高度） |
 | `use_sim_time` | `true` | 使用仿真时钟 |
 | `gz_partition` | `robot_sim_demo` | Gazebo 分区名 |
 
@@ -137,7 +137,7 @@ cd src/robot_sim_demo
 python3 -m pytest test/ -v
 ```
 
-7 项测试全部通过：检查必需文件存在性、SDF/URDF 格式正确性、世界文件引用、Launch 引用、相机内参匹配、DiffDrive 插件配置和 Wheeltec 模型网格引用。
+8 项测试全部通过：检查必需文件存在性、SDF/URDF 格式正确性、世界文件引用、Launch 引用、相机内参匹配、DiffDrive 插件配置、Wheeltec 模型网格引用，以及轮子碰撞几何与关节轴一致性（Y 轴、四轮驱动、最高 10 m/s）。
 
 ## 截图录制
 
@@ -152,7 +152,11 @@ bash tools/record_gazebo_scene.sh 16 6
 ## 机器人模型
 
 Wheeltec Mini AKM 机器人使用 Gazebo Sim Harmonic 原生 `DiffDrive` 系统：
-- 初始位置：场景中心开放区域 `(0, 0, 0.03)`
+- 初始位置：场景中心开放区域 `(0, 0, 0.017)`（四轮准确接地高度）
 - 坐标系：`base_link`（底盘）→ `laser_link`（激光雷达）→ `camera_link`（相机）
+- 四轮差速驱动：左右各两轮（`lb_joint`/`lf_point` 与 `rb_joint`/`rf_point`）共同驱动
+- 性能参数：最高线速度 `10.0 m/s`、线加速度 `1.0 m/s²`、最高角速度 `3.0 rad/s`
+- 轮子碰撞体为沿 Y 轴圆柱（半径 0.033 m），与关节轴一致，滚动摩擦 `mu=1.2`、侧向 `mu2=0.3`
+- 物理稳定性：世界步长 `1 ms`，实测静置与直行/转向时 `z` 稳定于 0.0168 m、roll/pitch≈0
 - 配色：石墨黑车体、黑色轮胎、银色轮毂/RGB-D 外壳、青色状态环、安全橙前部
 - 两个原始门洞已用与相邻墙面对齐的墙体封闭

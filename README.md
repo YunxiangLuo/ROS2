@@ -1,6 +1,6 @@
 # ROS 2 仿真与教学
 
-本工作区包含 44 个 ROS 2 包，涵盖话题通信、服务通信、动作通信、参数系统、TF 坐标变换、URDF 建模、Gazebo 仿真、SLAM 建图、Nav2 自主导航和 xArm6 机械臂仿真，以及一个完整的 ISCAS Museum 仿真场景。
+本工作区包含 50 个 ROS 2 包，涵盖话题通信、服务通信、动作通信、参数系统、TF 坐标变换、URDF 建模、Gazebo 仿真、SLAM 建图、Nav2 自主导航、xArm6 机械臂仿真和 CARLA 自动驾驶仿真（接口/感知/规划/控制/安全/传感器），以及一个完整的 ISCAS Museum 仿真场景。
 
 ## 环境
 
@@ -42,9 +42,15 @@
 │   ├── name_demo_cpp/               命名空间与参数 (C++)
 │   ├── msgs_demo_interfaces/       综合消息接口
 │   ├── urdf_demo_ros2/            URDF/Xacro 建模演示
+│   ├── av_carla_interfaces/         CARLA 自动驾驶共享接口（msg/srv/action）
+│   ├── av_sensor_kit/               CARLA 传感器套件（配置/健康管理）
+│   ├── av_perception_py/            感知（YOLO/DBSCAN/融合）
+│   ├── av_planning_py/              规划（A*/航点/Navigate 动作）
+│   ├── av_control_cpp/              车辆控制（PID/Pure Pursuit）
+│   ├── av_safety_monitor/           安全监控（TTC/AEB/故障注入）
 │   ├── course_lab_interfaces/      课程实验共享接口
 │   ├── course_lab_utils/           课程实验共享实现
-│   └── lab_code/                    教学实验包（Ch01-Ch21）
+│   └── lab_code/                    教学实验包（Ch01-Ch31）
 │       ├── ch01_lab/lifecycle_demo/  生命周期节点
 │       ├── ch02_lab/hello_pkg/      节点与日志
 │       ├── ch03_lab/topic_demo/      话题通信
@@ -65,7 +71,8 @@
 │       ├── ch17_lab/moveit_fk_ik_lab/  MoveIt FK/IK
 │       ├── ch18_lab/moveit_pick_place_lab/ MoveIt 抓取放置
 │       ├── ch19_lab/vision_detection_lab/ 视觉检测
-│       └── ch21_lab/vision_pickup_lab/   视觉引导抓取
+│       ├── ch21_lab/vision_pickup_lab/   视觉引导抓取
+│       └── ch22_lab/ ... ch31_lab/       CARLA 自动驾驶实验（脚本）
 └── README.md                        本文件
 ```
 
@@ -117,7 +124,17 @@ colcon build --symlink-install
 source install/setup.bash
 ```
 
-当前环境已验证：核心 32 包全量构建 `Summary: 32 packages finished [3min 12s]`；`course_lab_interfaces`、`course_lab_utils` 及 lab_code 新增实验包（`realsense_lab`、`slam_bringup_lab`、`nav_bringup_lab`、`arm_joint_pub_lab`、`moveit_fk_ik_lab`、`moveit_pick_place_lab`、`vision_detection_lab`、`vision_pickup_lab`）均已单独构建通过，合计 44 包。
+当前环境已验证：核心 32 包全量构建 `Summary: 32 packages finished [3min 12s]`；`course_lab_interfaces`、`course_lab_utils`、lab_code 新增实验包（`realsense_lab`、`slam_bringup_lab`、`nav_bringup_lab`、`arm_joint_pub_lab`、`moveit_fk_ik_lab`、`moveit_pick_place_lab`、`vision_detection_lab`、`vision_pickup_lab`）及 CARLA 自动驾驶系列（`av_carla_interfaces`、`av_sensor_kit`、`av_perception_py`、`av_planning_py`、`av_control_cpp`、`av_safety_monitor`）均已单独构建通过，合计 50 包（另有嵌套包 `wheeltec_robot_urdf` 随 `robot_sim_demo` 数据安装）。
+
+CARLA 系列额外依赖：
+
+```bash
+# CARLA 仿真器（ch22-ch31 实验需要，见 src/lab_code/ch22_lab/install_carla.sh）
+# CARLA-ROS2 桥接与 Python API
+pip install carla numpy opencv-python
+# 可选：YOLO 检测
+pip install ultralytics
+```
 
 ## 包清单
 
@@ -159,6 +176,17 @@ source install/setup.bash
 | `course_lab_interfaces` | C++ | 课程实验共享接口：`srv/ValidateRecipe`、`srv/ReadLabel`、`action/Pipeline`、`msg/MarkerPose` |
 | `course_lab_utils` | Python | 课程实验共享实现：MoveIt 演示、视觉检测、AR 抓取、机械臂控制（lab_code ch17-ch21 依赖） |
 
+### CARLA 自动驾驶（av 系列）
+
+| 包名 | 类型 | 说明 |
+|------|------|------|
+| `av_carla_interfaces` | C++ | 自动驾驶共享接口：`ControlCmd`/`EgoState`/`Waypoint`/`PerceptionObject` 等 msg、`PlanPath` srv、`Navigate` action |
+| `av_sensor_kit` | Python | CARLA 传感器套件：配置预设（YAML 读写）与传感器健康管理节点 |
+| `av_perception_py` | Python | 感知节点：YOLO 目标检测（HSV 兜底）、LiDAR DBSCAN 聚类、相机-LiDAR 前融合 |
+| `av_planning_py` | Python | 规划节点：A* 栅格全局规划、航点生成、`/navigate` 动作服务 |
+| `av_control_cpp` | C++ | 车辆控制器：纵向 PID、横向 Pure Pursuit、一体化车辆控制 |
+| `av_safety_monitor` | Python | 安全监控：TTC 三级预警、AEB 紧急制动、碰撞事件处理、故障注入工具 |
+
 ### 其他示例
 
 | 包名 | 语言 | 说明 |
@@ -170,7 +198,9 @@ source install/setup.bash
 | `name_demo_cpp` | C++ | 命名空间、节点名、参数 |
 | `urdf_demo_ros2` | Python | URDF/Xacro 建模演示：mybot 模型、四种 RViz 显示 launch |
 
-### 教学实验包（lab_code，21 章）
+### 教学实验包（lab_code，31 章）
+
+**ROS 2 基础与机器人仿真（ch01-ch21，标准 ROS 2 包）**
 
 | 章节 | 包名 | 说明 |
 |------|------|------|
@@ -196,8 +226,24 @@ source install/setup.bash
 | Ch19 | `vision_detection_lab` | 相机/cv_bridge/颜色/AR 码检测 |
 | Ch21 | `vision_pickup_lab` | 视觉引导抓取（AR + xArm） |
 
-Ch16、Ch20 为占位章节（仅 README）。lab_code 详细说明见
-[lab_code/README.md](src/lab_code/README.md)。
+Ch16、Ch20 为占位章节（仅 README）。
+
+**CARLA 自动驾驶实验（ch22-ch31，实验脚本，配合 av_* 包）**
+
+| 章节 | 脚本 | 说明 |
+|------|------|------|
+| Ch22 | `explore_carla.py`、`spawn_vehicles.py` | CARLA 仿真器入门：环境探索与车辆生成 |
+| Ch23 | `spawn_ego.py`、`bridge_launch.sh` | CARLA-ROS2 桥接与 ego 车辆生成、话题检查 |
+| Ch24 | `sensor_config.py`、`record_bag.sh` | 多传感器配置、数据采集（rosbag）与可视化 |
+| Ch25 | `global_planner.py`、`waypoint_pub.py` | 全局路径规划（A*）、地图可视化与航点发布 |
+| Ch26 | `pid_controller.py`、`pure_pursuit.py` | 车身控制：纵向 PID、横向 Pure Pursuit、一体化控制 |
+| Ch27 | `localization_eval.py`、`tf_broadcaster.py` | 多传感器融合定位（EKF）与定位评估 |
+| Ch28 | `yolo_detector.py`、`lidar_cluster.py` | 目标检测与跟踪：YOLO 检测、LiDAR 聚类、目标跟踪 |
+| Ch29 | `fsm_decision.py`、`traffic_light_detector.py` | 行为决策（FSM）与交通灯感知 |
+| Ch30 | `safety_monitor.py`、`fault_injector.py` | 安全验证：TTC 监控、故障注入、集成测试、评估指标 |
+| Ch31 | `main_pipeline.py`、`town_demo.sh` | 综合项目：全流程自动驾驶 Pipeline 与一键演示 |
+
+lab_code 详细说明见 [lab_code/README.md](src/lab_code/README.md)。
 
 ## 快速开始
 

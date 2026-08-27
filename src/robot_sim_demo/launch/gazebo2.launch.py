@@ -7,13 +7,11 @@ from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import (
     DeclareLaunchArgument,
-    IncludeLaunchDescription,
-    OpaqueFunction,
+    ExecuteProcess,
     SetEnvironmentVariable,
     TimerAction,
 )
 from launch.conditions import IfCondition, UnlessCondition
-from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
@@ -30,12 +28,6 @@ def generate_launch_description() -> LaunchDescription:
     bridge_config = share / "config" / "gazebo2_bridge.yaml"
     gui_config = share / "gui" / "museum.gui.config"
     rviz_config = share / "rviz" / "museum.rviz"
-    models = share / "models"
-    gz_launch = (
-        Path(get_package_share_directory("ros_gz_sim"))
-        / "launch"
-        / "gz_sim.launch.py"
-    )
 
     gui = LaunchConfiguration("gui")
     rviz = LaunchConfiguration("rviz")
@@ -56,26 +48,59 @@ def generate_launch_description() -> LaunchDescription:
 
     robot_description = robot_urdf.read_text(encoding="utf-8")
 
-    gazebo_gui = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(str(gz_launch)),
+    gz_executable = "gz"
+    gazebo_gui = ExecuteProcess(
+        cmd=[
+            gz_executable, "sim", "-r",
+            "--gui-config", str(gui_config),
+            world_path,
+        ],
+        name="gazebo",
+        output="screen",
         condition=IfCondition(gui),
-        launch_arguments={
-            "gz_args": [
-                "-r --gui-config ",
-                str(gui_config),
-                " ",
-                 world_path,
-            ],
-            "on_exit_shutdown": "true",
-        }.items(),
+        additional_env={
+            "GZ_PARTITION": gz_partition,
+            "GZ_SIM_RESOURCE_PATH": os.pathsep.join(
+                filter(None, [
+                    str(share / "models"),
+                    str(share / "wheeltec_robot_urdf"),
+                    os.environ.get("GZ_SIM_RESOURCE_PATH", ""),
+                ])
+            ),
+            "IGN_GAZEBO_RESOURCE_PATH": os.pathsep.join(
+                filter(None, [
+                    str(share / "models"),
+                    str(share / "wheeltec_robot_urdf"),
+                    os.environ.get("IGN_GAZEBO_RESOURCE_PATH", ""),
+                ])
+            ),
+        },
     )
-    gazebo_headless = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(str(gz_launch)),
+    gazebo_headless = ExecuteProcess(
+        cmd=[
+            gz_executable, "sim", "-r", "-s", "--headless-rendering",
+            world_path,
+        ],
+        name="gazebo",
+        output="screen",
         condition=UnlessCondition(gui),
-        launch_arguments={
-            "gz_args": ["-r -s --headless-rendering ", world_path],
-            "on_exit_shutdown": "true",
-        }.items(),
+        additional_env={
+            "GZ_PARTITION": gz_partition,
+            "GZ_SIM_RESOURCE_PATH": os.pathsep.join(
+                filter(None, [
+                    str(share / "models"),
+                    str(share / "wheeltec_robot_urdf"),
+                    os.environ.get("GZ_SIM_RESOURCE_PATH", ""),
+                ])
+            ),
+            "IGN_GAZEBO_RESOURCE_PATH": os.pathsep.join(
+                filter(None, [
+                    str(share / "models"),
+                    str(share / "wheeltec_robot_urdf"),
+                    os.environ.get("IGN_GAZEBO_RESOURCE_PATH", ""),
+                ])
+            ),
+        },
     )
 
     spawn = Node(
@@ -101,20 +126,6 @@ def generate_launch_description() -> LaunchDescription:
         ],
     )
 
-    def set_resource_paths(context):
-        """Set os.environ so gz_sim.launch.py's OpaqueFunction picks them up."""
-        models_dir = str(share / "models")
-        urdf_dir = str(share / "wheeltec_robot_urdf")
-        existing_gz = os.environ.get("GZ_SIM_RESOURCE_PATH", "")
-        os.environ["GZ_SIM_RESOURCE_PATH"] = os.pathsep.join(
-            filter(None, [models_dir, urdf_dir, existing_gz])
-        )
-        existing_ign = os.environ.get("IGN_GAZEBO_RESOURCE_PATH", "")
-        os.environ["IGN_GAZEBO_RESOURCE_PATH"] = os.pathsep.join(
-            filter(None, [models_dir, urdf_dir, existing_ign])
-        )
-        return None
-
     return LaunchDescription(
         [
             DeclareLaunchArgument("gui", default_value="true"),
@@ -131,10 +142,29 @@ def generate_launch_description() -> LaunchDescription:
             SetEnvironmentVariable(name="GZ_PARTITION", value=gz_partition),
             DeclareLaunchArgument("spawn_x", default_value="0.0"),
             DeclareLaunchArgument("spawn_y", default_value="0.0"),
-            DeclareLaunchArgument("spawn_z", default_value="0.03"),
+            DeclareLaunchArgument("spawn_z", default_value="0.017"),
             DeclareLaunchArgument("spawn_yaw", default_value="0.0"),
             DeclareLaunchArgument("use_sim_time", default_value="true"),
-            OpaqueFunction(function=set_resource_paths),
+            SetEnvironmentVariable(
+                name="GZ_SIM_RESOURCE_PATH",
+                value=[
+                    str(share / "models"),
+                    os.pathsep,
+                    str(share / "wheeltec_robot_urdf"),
+                    os.pathsep,
+                    os.environ.get("GZ_SIM_RESOURCE_PATH", ""),
+                ],
+            ),
+            SetEnvironmentVariable(
+                name="IGN_GAZEBO_RESOURCE_PATH",
+                value=[
+                    str(share / "models"),
+                    os.pathsep,
+                    str(share / "wheeltec_robot_urdf"),
+                    os.pathsep,
+                    os.environ.get("IGN_GAZEBO_RESOURCE_PATH", ""),
+                ],
+            ),
             gazebo_gui,
             gazebo_headless,
             Node(

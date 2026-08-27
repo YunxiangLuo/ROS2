@@ -47,6 +47,7 @@ class SimulationAssetTest(unittest.TestCase):
         for relative_path in (
             "worlds/museum.sdf",
             "models/campus_patrol_robot/model.sdf",
+            "models/wheeltec_robot/model.sdf",
             "models/ISCAS_Museum/model.sdf",
             "models/ISCAS_groundplane/model.sdf",
             "urdf/campus_patrol_robot.urdf",
@@ -121,3 +122,39 @@ class SimulationAssetTest(unittest.TestCase):
                 f"model://wheeltec_robot/meshes/{mesh_name}",
                 model_text,
             )
+
+    def test_wheeltec_wheels_match_joint_axis(self):
+        model_root = ElementTree.parse(
+            self.package_root / "models/wheeltec_robot/model.sdf"
+        ).getroot()
+        model = model_root.find("model")
+        self.assertIsNotNone(model)
+
+        for link_name in ("lb_link", "rb_link", "lf_link", "rf_link"):
+            with self.subTest(link_name=link_name):
+                collision = model.find(f"link[@name='{link_name}']/collision")
+                self.assertIsNotNone(collision)
+                self.assertEqual("0 0 0 1.5708 0 0", collision.findtext("pose"))
+                self.assertEqual("0.033", collision.findtext("geometry/cylinder/radius"))
+
+        for joint_name in ("lb_joint", "rb_joint", "lf_point", "rf_point"):
+            with self.subTest(joint_name=joint_name):
+                self.assertEqual(
+                    "0 1 0",
+                    model.findtext(f"joint[@name='{joint_name}']/axis/xyz"),
+                )
+
+        plugin = model.find("plugin")
+        self.assertEqual(
+            ["lb_joint", "lf_point"],
+            [element.text for element in plugin.findall("left_joint")],
+        )
+        self.assertEqual(
+            ["rb_joint", "rf_point"],
+            [element.text for element in plugin.findall("right_joint")],
+        )
+
+        self.assertEqual(
+            "10.0",
+            model.findtext("plugin/max_linear_velocity"),
+        )

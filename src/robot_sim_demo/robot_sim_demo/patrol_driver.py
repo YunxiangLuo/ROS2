@@ -26,7 +26,7 @@ class PatrolDriver(Node):
         self.finished = False
 
         self.get_logger().info(
-            "Patrol driver started: "
+            "Patrol driver ready: "
             f"speed={self.linear_speed:.2f} m/s, "
             f"turn={self.angular_speed:.2f} rad/s, loop={self.loop}"
         )

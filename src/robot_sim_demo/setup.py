@@ -68,6 +68,7 @@ setup(
     packages=[package_name],
     data_files=package_data_files(),
     install_requires=["setuptools"],
+    tests_require=["pytest"],
     zip_safe=True,
     maintainer="tiger",
     maintainer_email="dev@example.com",

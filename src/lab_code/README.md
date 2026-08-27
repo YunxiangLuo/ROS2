@@ -1,4 +1,4 @@
-# lab_code — ROS 2 教学实验代码
+# ROS 2 教学实验代码
 
 本目录包含 ROS 2 Jazzy 教学课程的实验代码，覆盖节点、话题、服务、动作、参数、
 TF、URDF、Gazebo 仿真、SLAM、Nav2、MoveIt 2 与视觉等主题。经去重、删除与

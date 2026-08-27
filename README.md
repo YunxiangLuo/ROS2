@@ -1,6 +1,6 @@
 # ROS 2 仿真与教学
 
-本工作区包含 32 个 ROS 2 包，涵盖话题通信、服务通信、动作通信、参数系统、TF 坐标变换、URDF 建模、Gazebo 仿真、SLAM 建图、Nav2 自主导航和 xArm6 机械臂仿真，以及一个完整的 ISCAS Museum 仿真场景。
+本工作区包含 44 个 ROS 2 包，涵盖话题通信、服务通信、动作通信、参数系统、TF 坐标变换、URDF 建模、Gazebo 仿真、SLAM 建图、Nav2 自主导航和 xArm6 机械臂仿真，以及一个完整的 ISCAS Museum 仿真场景。
 
 ## 环境
 
@@ -41,7 +41,11 @@
 │   ├── tf_demo_cpp/                 TF 坐标变换 (C++)
 │   ├── name_demo_cpp/               命名空间与参数 (C++)
 │   ├── msgs_demo_interfaces/       综合消息接口
-│   └── lab_code/                    教学实验包（Ch02-Ch11）
+│   ├── urdf_demo_ros2/            URDF/Xacro 建模演示
+│   ├── course_lab_interfaces/      课程实验共享接口
+│   ├── course_lab_utils/           课程实验共享实现
+│   └── lab_code/                    教学实验包（Ch01-Ch21）
+│       ├── ch01_lab/lifecycle_demo/  生命周期节点
 │       ├── ch02_lab/hello_pkg/      节点与日志
 │       ├── ch03_lab/topic_demo/      话题通信
 │       ├── ch03_lab/sensor_pub/     自定义消息
@@ -53,7 +57,15 @@
 │       ├── ch08_lab/urdf_demo/      URDF 建模
 │       ├── ch09_lab/sim_demo/       Gazebo 仿真
 │       ├── ch10_lab/slam_lab/       SLAM 建图
-│       └── ch11_lab/navigation_lab/  Nav2 导航
+│       ├── ch11_lab/navigation_lab/  Nav2 导航
+│       ├── ch12_lab/realsense_lab/  RealSense 相机
+│       ├── ch13_lab/slam_bringup_lab/ SLAM 一键建图
+│       ├── ch14_lab/nav_bringup_lab/  Nav2 一键导航
+│       ├── ch15_lab/arm_joint_pub_lab/ xArm 关节发布
+│       ├── ch17_lab/moveit_fk_ik_lab/  MoveIt FK/IK
+│       ├── ch18_lab/moveit_pick_place_lab/ MoveIt 抓取放置
+│       ├── ch19_lab/vision_detection_lab/ 视觉检测
+│       └── ch21_lab/vision_pickup_lab/   视觉引导抓取
 └── README.md                        本文件
 ```
 
@@ -105,7 +117,7 @@ colcon build --symlink-install
 source install/setup.bash
 ```
 
-当前环境已验证完整构建：`Summary: 32 packages finished [3min 12s]`。
+当前环境已验证：核心 32 包全量构建 `Summary: 32 packages finished [3min 12s]`；`course_lab_interfaces`、`course_lab_utils` 及 lab_code 新增实验包（`realsense_lab`、`slam_bringup_lab`、`nav_bringup_lab`、`arm_joint_pub_lab`、`moveit_fk_ik_lab`、`moveit_pick_place_lab`、`vision_detection_lab`、`vision_pickup_lab`）均已单独构建通过，合计 44 包。
 
 ## 包清单
 
@@ -140,6 +152,13 @@ source install/setup.bash
 | `msgs_demo_interfaces` | ROS 1 迁移的综合消息接口（24 个 msg/srv/action） |
 | `sensor_interfaces` | `msg/SensorData`（temperature, humidity, pressure, device_id） |
 
+### 教学支持包
+
+| 包名 | 类型 | 说明 |
+|------|------|------|
+| `course_lab_interfaces` | C++ | 课程实验共享接口：`srv/ValidateRecipe`、`srv/ReadLabel`、`action/Pipeline`、`msg/MarkerPose` |
+| `course_lab_utils` | Python | 课程实验共享实现：MoveIt 演示、视觉检测、AR 抓取、机械臂控制（lab_code ch17-ch21 依赖） |
+
 ### 其他示例
 
 | 包名 | 语言 | 说明 |
@@ -149,11 +168,13 @@ source install/setup.bash
 | `tf_demo_py` | Python | TF2 广播、监听、坐标变换 |
 | `tf_demo_cpp` | C++ | TF2 广播、监听、四元数转换 |
 | `name_demo_cpp` | C++ | 命名空间、节点名、参数 |
+| `urdf_demo_ros2` | Python | URDF/Xacro 建模演示：mybot 模型、四种 RViz 显示 launch |
 
-### 教学实验包（lab_code）
+### 教学实验包（lab_code，21 章）
 
 | 章节 | 包名 | 说明 |
 |------|------|------|
+| Ch01 | `lifecycle_demo` | 生命周期节点、`/cmd_vel` 发布 |
 | Ch02 | `hello_pkg` | 节点创建、日志分级 |
 | Ch03 | `topic_demo` | 话题发布/订阅/QoS/正方形轨迹 |
 | Ch03 | `sensor_pub` | 自定义 SensorData 消息发布 |
@@ -163,9 +184,20 @@ source install/setup.bash
 | Ch06 | `param_demo` | 参数声明/Launch 配置 |
 | Ch07 | `tf_demo` | TF2 广播/监听 |
 | Ch08 | `urdf_demo` | URDF/Xacro 建模 + RViz |
-| Ch09 | `sim_demo` | Gazebo 仿真启动 |
+| Ch09 | `sim_demo` | Gazebo 仿真启动（委托 `robot_sim_demo`） |
 | Ch10 | `slam_lab` | SLAM/Cartographer/AMCL |
 | Ch11 | `navigation_lab` | Nav2 导航/航点/恢复 |
+| Ch12 | `realsense_lab` | RealSense 深度相机启动 |
+| Ch13 | `slam_bringup_lab` | SLAM 一键建图（`robot_sim_demo` + slam_toolbox） |
+| Ch14 | `nav_bringup_lab` | Nav2 一键导航（`robot_sim_demo` + Nav2） |
+| Ch15 | `arm_joint_pub_lab` | xArm 关节状态发布 |
+| Ch17 | `moveit_fk_ik_lab` | MoveIt FK/IK 规划（MoveItPy） |
+| Ch18 | `moveit_pick_place_lab` | MoveIt 抓取/避障/附着演示 |
+| Ch19 | `vision_detection_lab` | 相机/cv_bridge/颜色/AR 码检测 |
+| Ch21 | `vision_pickup_lab` | 视觉引导抓取（AR + xArm） |
+
+Ch16、Ch20 为占位章节（仅 README）。lab_code 详细说明见
+[lab_code/README.md](src/lab_code/README.md)。
 
 ## 快速开始
 
@@ -214,29 +246,75 @@ ros2 run navigation_sim_demo_ros2 nav_goal_runner --ros-args -p use_sim_time:=tr
 
 ## 测试
 
-全部 29 项测试通过：
+全部 116 项测试通过（`course_lab_utils` 的测试需 `moveit_py`，未计入）：
 
 ```bash
-# 运行所有有测试的包
+# 核心与示例包
 for pkg in action_demo_py topic_demo_py service_demo_py param_demo_py tf_demo_py \
-  tf_follower_ros2 navigation_sim_demo_ros2 slam_sim_demo_ros2 robot_sim_demo; do
+  tf_follower_ros2 navigation_sim_demo_ros2 slam_sim_demo_ros2 robot_sim_demo \
+  urdf_demo_ros2 xarm; do
   echo "=== $pkg ==="
   (cd src/$pkg && python3 -m pytest test/ -q)
 done
+
+# lab_code 各章（详见 src/lab_code/README.md）
+for pkg in ch01_lab ch02_lab/hello_pkg ch03_lab/sensor_pub ch03_lab/topic_demo \
+  ch04_lab/service_demo ch05_lab/action_demo ch06_lab/param_demo ch07_lab/tf_demo \
+  ch08_lab/urdf_demo ch09_lab/sim_demo ch10_lab/slam_lab ch11_lab/navigation_lab \
+  ch12_lab/realsense_lab ch13_lab/slam_bringup_lab ch14_lab/nav_bringup_lab \
+  ch15_lab/arm_joint_pub_lab ch17_lab/moveit_fk_ik_lab ch18_lab/moveit_pick_place_lab \
+  ch19_lab/vision_detection_lab ch21_lab/vision_pickup_lab; do
+  echo "=== $pkg ==="
+  (cd src/lab_code/$pkg && python3 -m pytest test/ -q)
+done
 ```
+
+### 仿真核心与支持包
 
 | 包名 | 测试数 | 结果 |
 |------|--------|------|
-| `robot_sim_demo` | 7 | 全通过 |
+| `robot_sim_demo` | 8 | 全通过 |
+| `xarm_ros2_arm_only` | 9 | 全通过 |
 | `tf_follower_ros2` | 7 | 全通过 |
-| `navigation_sim_demo_ros2` | 5 | 全通过 |
 | `slam_sim_demo_ros2` | 6 | 全通过 |
+| `navigation_sim_demo_ros2` | 5 | 全通过 |
+| `urdf_demo_ros2` | 1 | 通过 |
+
+### 示例包
+
+| 包名 | 测试数 | 结果 |
+|------|--------|------|
 | `action_demo_py` | 1 | 通过 |
 | `topic_demo_py` | 1 | 通过 |
 | `service_demo_py` | 1 | 通过 |
 | `param_demo_py` | 1 | 通过 |
 | `tf_demo_py` | 1 | 通过 |
-| **合计** | **29** | **全部通过** |
+
+### lab_code 教学实验包
+
+| 包名 | 测试数 | 结果 |
+|------|--------|------|
+| `lifecycle_demo` | 1 | 通过 |
+| `hello_pkg` | 2 | 通过 |
+| `sensor_pub` | 1 | 通过 |
+| `topic_demo` | 2 | 通过 |
+| `service_demo` | 2 | 通过 |
+| `action_demo` | 3 | 通过 |
+| `param_demo` | 5 | 通过 |
+| `tf_demo` | 4 | 通过 |
+| `urdf_demo` | 5 | 通过 |
+| `sim_demo` | 4 | 通过 |
+| `slam_lab` | 5 | 通过 |
+| `navigation_lab` | 6 | 通过 |
+| `realsense_lab` | 3 | 通过 |
+| `slam_bringup_lab` | 5 | 通过 |
+| `nav_bringup_lab` | 4 | 通过 |
+| `arm_joint_pub_lab` | 5 | 通过 |
+| `moveit_fk_ik_lab` | 6 | 通过 |
+| `moveit_pick_place_lab` | 3 | 通过 |
+| `vision_detection_lab` | 4 | 通过 |
+| `vision_pickup_lab` | 5 | 通过 |
+| **合计** | **116** | **全部通过** |
 
 ![Nav2 导航](./nav2.gif)
 

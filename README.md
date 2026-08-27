@@ -1,6 +1,6 @@
 # ROS 2 仿真与教学
 
-本工作区包含 31 个 ROS 2 包，涵盖话题通信、服务通信、动作通信、参数系统、TF 坐标变换、URDF 建模、Gazebo 仿真、SLAM 建图和 Nav2 自主导航，以及一个完整的 ISCAS Museum 仿真场景。
+本工作区包含 32 个 ROS 2 包，涵盖话题通信、服务通信、动作通信、参数系统、TF 坐标变换、URDF 建模、Gazebo 仿真、SLAM 建图、Nav2 自主导航和 xArm6 机械臂仿真，以及一个完整的 ISCAS Museum 仿真场景。
 
 ## 环境
 
@@ -22,6 +22,7 @@
 │   │   ├── config/                  ROS-Gazebo 桥配置
 │   │   ├── gui/                     Gazebo GUI 配置
 │   │   └── wheeltec_robot_urdf/     Wheeltec URDF/STL 资源
+│   ├── xarm/                        xArm6 + Gazebo Harmonic + MoveIt 2 仿真
 │   ├── navigation_sim_demo_ros2/    Nav2 导航仿真
 │   ├── slam_sim_demo_ros2/          SLAM 建图仿真
 │   ├── tf_follower_ros2/            TF 跟随控制器
@@ -67,26 +68,44 @@ sudo apt update && sudo apt install -y \
   ros-jazzy-desktop \
   ros-jazzy-ros-gz-sim ros-jazzy-ros-gz-bridge ros-jazzy-ros-gz-image \
   ros-jazzy-navigation2 ros-jazzy-nav2-bringup ros-jazzy-nav2-simple-commander \
-  ros-jazzy-slam-toolbox ros-jazzy-nav2-map-server \
-  ros-jazzy-robot-state-publisher ros-jazzy-joint-state-publisher-gui \
-  ros-jazzy-rviz2 \
-  python3-colcon-common-extensions
+   ros-jazzy-slam-toolbox ros-jazzy-nav2-map-server \
+   ros-jazzy-robot-state-publisher ros-jazzy-joint-state-publisher-gui \
+   ros-jazzy-rviz2 ros-jazzy-ros2-control ros-jazzy-ros2-controllers \
+   ros-jazzy-gz-ros2-control ros-jazzy-moveit \
+   ros-jazzy-trac-ik-kinematics-plugin \
+   python3-colcon-common-extensions
 ```
 
-### 2. 克隆工作区
+### 2. 准备 xArm 描述底层
+
+`xarm_ros2_arm_only` 的运行依赖自定义 XBot Arm `xarm_description` `2.0.0`。该描述包不随本工作区提供，必须先在独立底层工作区中构建，并在构建或启动 xArm 前 source：
+
+```bash
+source /opt/ros/jazzy/setup.bash
+cd /path/to/xarm_description_workspace
+colcon build --symlink-install --packages-select xarm_description
+source install/setup.bash
+```
+
+该描述包必须提供 `xarm_description/urdf/arm.urdf.xacro`，并采用 `arm_1_joint` 至 `arm_6_joint` 的关节命名。不要直接替换为使用 `joint1` 至 `joint6` 的 UFACTORY 官方描述包，除非同步迁移 Xacro、SRDF、控制器和 MoveIt 配置。
+
+### 3. 克隆工作区
 
 ```bash
 git clone https://github.com/YunxiangLuo/ROS2.git
 cd ROS2
 ```
 
-### 3. 编译全部包
+### 4. 编译全部包
 
 ```bash
 source /opt/ros/jazzy/setup.bash
+source /path/to/xarm_description_workspace/install/setup.bash
 colcon build --symlink-install
 source install/setup.bash
 ```
+
+当前环境已验证完整构建：`Summary: 32 packages finished [3min 12s]`。
 
 ## 包清单
 
@@ -95,6 +114,7 @@ source install/setup.bash
 | 包名 | 类型 | 说明 |
 |------|------|------|
 | `robot_sim_demo` | Python | ISCAS Museum Gazebo 仿真：Wheeltec 机器人、传感器桥、巡航驱动 |
+| `xarm_ros2_arm_only` | Python | xArm6 纯机械臂仿真：Gazebo Harmonic、ros2_control、MoveIt 2 和 RViz |
 | `navigation_sim_demo_ros2` | Python | Nav2 导航栈：地图、AMCL、规划、控制 |
 | `slam_sim_demo_ros2` | Python | slam_toolbox 在线建图 |
 | `tf_follower_ros2` | Python | TF 跟随控制器：基于坐标变换的速度控制 |
